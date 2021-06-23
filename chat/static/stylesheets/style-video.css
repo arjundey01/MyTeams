@@ -1,0 +1,15 @@
+#local-video{
+    transform: rotateY(180deg);
+    -webkit-transform:rotateY(180deg); 
+    -moz-transform:rotateY(180deg); 
+    object-fit: cover;
+}
+#remote-video{
+    object-fit: cover;
+}
+
+@media (min-width: 768px){
+    .sidebar{
+        width: 40vw;
+    }
+}
