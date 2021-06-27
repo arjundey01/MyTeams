@@ -3,22 +3,67 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MyTeams | Chat</title>
     <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="/static/stylesheets/style-video.css">
+    <title>MyTeams | Chat</title>
 </head>
-<body class="h-screen flex flex-col items-center py-5">
-    <div class="videos-wrapper my-3 flex-grow flex flex-col sm:flex-row w-full">
-        <div class="w-full sm:w-1/2 h-1/2 sm:h-full overflow-hidden">
-            <video id="local-video" class="h-full w-full" autoplay playsinline controls="false"></video>
+<body>
+    <div class="flex flex-col h-screen w-screen bg-gray-900">
+        <div class="flex flex-grow overflow-hidden">
+            <div id="video-wrapper" class="flex-grow h-full grid">
+                <div class="ele overflow-hidden">
+                    <video id="local-video" class="h-full w-full" autoplay playsinline controls="false"></video>
+                </div>
+
+            </div>
+            <div id="chat-panel" class="h-full w-0 flex flex-col flex-shrink-0 bg-white">
+                <p class="text-gray-800 text-lg">Messages</p>
+                <div id="chat-msg-wrp" class="flex-grow w-full px-3 overflow-y-scroll">
+
+                </div>
+                <div class="w-full my-2 bg-gray-200 rounded-full py-2 px-5">
+                    <input type="text" class="bg-transparent w-full" id="chat-input" placeholder="Send message...">
+                </div>
+            </div>
         </div>
-        <div class="w-full sm:w-1/2 h-1/2 sm:h-full overflow-hidden">
-            <video id="remote-video" class="h-full w-full" autoplay playsinline controls="false"></video>
+        <div class="h-20 w-full flex justify-center items-center bg-gray-700 flex-shrink-0 relative">
+            <div class="flex justify-center flex-grow">
+                <div class=" p-2.5 h-11 w-11 mx-2 flex items-center justify-center cursor-pointer rounded-full bg-gray-800">
+                   <img src="/static/img/mute.svg">
+                </div>
+                <div class=" p-2.5 h-11 w-11 mx-2 flex items-center justify-center cursor-pointer rounded-full bg-gray-800">
+                    <img src="/static/img/mute-video.svg">
+                </div>
+                <div class=" p-3 h-11 w-11 mx-2 flex items-center justify-center cursor-pointer rounded-full bg-red-500">
+                    <img src="/static/img/hang-up.svg">
+                </div>
+            </div>
+            <div id="chat-toggle" class="h-12 w-12 ml-2 p-3.5 flex items-center justify-center cursor-pointer rounded-full bg-gray-800 absolute right-8">
+                <img src="/static/img/chat.svg">
+            </div>
         </div>
     </div>
-    <button id="call-button" class="bg-green-400 p-2 px-5 rounded">Call</button>
+    <!-- <button id="add-button" class="absolute right-10 bottom-10 bg-green-500 py-1 px-3 text-white">Add</button> -->
+    <template id="test-temp">
+        <div class="ele bg-gray-200 border-black border-solid border-2"></div>
+    </template>
+    <template id="remote-video-temp">
+        <div class="ele overflow-hidden ">
+            <video class="remote-video h-full w-full" autoplay playsinline controls="false"></video>
+        </div>
+    </template>
+    <template id="chat-msg-temp">
+        <div class="my-4">
+            <p class="chat-author font-medium"></p>
+            <p class="chat-text text-gray-500 text-sm"></p>
+        </div>
+    </template>
 </body>
-<script src="/static/scripts/peer_conn.js"></script>
-<script type="text" id="room-name">{{room_name}}</script>
+
+<script type="application/json" id="room-name">{{room_name}}</script>
+<script type="application/json" id="username">{{username}}</script>
+<script src="/static/scripts/video-chat-ui.js"></script>
+<script src="/static/scripts/peer-conn.js"></script>
 </html>

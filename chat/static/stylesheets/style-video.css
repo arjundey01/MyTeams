@@ -1,15 +1,31 @@
+#video-wrapper{
+    align-content: stretch;
+}
+
 #local-video{
     transform: rotateY(180deg);
     -webkit-transform:rotateY(180deg); 
     -moz-transform:rotateY(180deg); 
     object-fit: cover;
 }
-#remote-video{
+
+.remote-video{
     object-fit: cover;
 }
 
+video::-webkit-media-controls-enclosure {
+    display:none !important;
+}
+
+#chat-panel{
+    transition: 0.5s;
+}
+
+.chat-panel-active{
+    width: 320px;
+    padding: 12px 16px;
+}
+
 @media (min-width: 768px){
-    .sidebar{
-        width: 40vw;
-    }
+
 }
