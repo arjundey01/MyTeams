@@ -3,14 +3,11 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from django.contrib.auth.models import User
 import json
-from datetime import datetime
-from django.core.serializers.json import DjangoJSONEncoder
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.room_name=self.scope['url_route']['kwargs']['room_name']
         self.room_group_name='chat_%s'%self.room_name
-        self.username = self.scope['url_route']['kwargs']['username']
         await self.channel_layer.group_add(
             self.room_group_name,
             self.channel_name
@@ -18,6 +15,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.accept()
     
     async def disconnect(self, code):
+        print(self.username, 'leaving...')
         await self.channel_layer.group_send(
             self.room_group_name,
             {
@@ -44,11 +42,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 }
             )
         elif data['type']=='login':
-            active = await self.login_user(self.username)
+            active = await self.login_user(data['username'])
+            success = (type(active)==list)
             await self.send(json.dumps(
                 {
                     'type':'login',
-                    'payload':{'success':True,'channel_name':self.channel_name, 'active':active}
+                    'payload':{'success':success,'channel_name':self.channel_name, 'active':active}
                 })
             )
         elif data['type']=="offer":
@@ -87,7 +86,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 {
                     'type': 'chat_ready',
                     'username': self.username,
-                    'target': data['target']
+                    'target': data['target'],
+                    'muted': data['muted']
                 }
             )
         elif data['type']=="add-peer":
@@ -96,7 +96,18 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 {
                     'type': 'chat_add_peer',
                     'username': self.username,
-                    'target': data['target']
+                    'target': data['target'],
+                    'muted':data['muted']
+                }
+            )
+        elif data['type']=="mute":
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'chat_mute',
+                    'username': self.username,
+                    'kind': data['kind'],
+                    'muted':data['muted']
                 }
             )
 
@@ -126,28 +137,39 @@ class ChatConsumer(AsyncWebsocketConsumer):
     
     async def chat_ready(self, event):
         if event['target'] == self.username:
-            await self.send(text_data=json.dumps({'type':'ready','payload':{'target':event['username']}}))
+            await self.send(text_data=json.dumps({'type':'ready','payload':{
+                'target':event['username'],
+                'muted': event['muted']}}))
     
     async def chat_add_peer(self, event):
         if event['target'] == self.username:
-            await self.send(text_data=json.dumps({'type':'add-peer','payload':{'username':event['username']}}))
+            await self.send(text_data=json.dumps({'type':'add-peer','payload':{
+                'username':event['username'],
+                'muted': event['muted']}}))
 
     async def chat_leave(self, event):
         if event['username'] != self.username:
-            print('leaving...')
             await self.send(text_data=json.dumps({'type':'leave','payload':{'username':event['username']}}))
 
+    async def chat_mute(self, event):
+        print(event)
+        if event['username']!=self.username:
+            await self.send(text_data=json.dumps({'type':'mute','payload':{
+                'username':event['username'], 
+                'kind':event['kind'], 
+                'muted':event['muted']}}))
 
     @database_sync_to_async
     def login_user(self,user):
         v_room, created = VideoChatRoom.objects.get_or_create(name = self.room_group_name)
         active = v_room.active_members
         if user in active:
-            active.remove(user)
+            return False
         new_active = set(active[:])
         new_active.add(user)
         v_room.active_members = list(new_active)
         v_room.save()
+        self.username = user
         return list(active)
     
     @database_sync_to_async

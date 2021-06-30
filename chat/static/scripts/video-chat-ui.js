@@ -1,4 +1,12 @@
-$('#chat-toggle').on('click', function(e){
+let vh = window.innerHeight;
+document.documentElement.style.setProperty('--vh', `${vh}px`);
+
+window.addEventListener('resize', () => {
+    let vh = window.innerHeight;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+});
+
+$('.chat-toggle').on('click', function(e){
     $('#chat-panel').toggleClass('chat-panel-active');
 })
 
