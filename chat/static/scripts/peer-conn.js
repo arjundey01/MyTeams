@@ -148,8 +148,6 @@ const signalingChannel = new WebSocket(
     + '/ws/chat/'
     + roomName
     + '/'
-    + selfUsername
-    + '/'
 );
 
 signalingChannel.onopen = ()=>{
@@ -220,7 +218,7 @@ function handleLogin({success, active}){
     }
 }
 
-handleAddPeer = function({username, muted}){
+function handleAddPeer ({username, muted}){
     if(username == selfUsername)return;
     if(peers[username]){
         peers[username].createVideo();
@@ -245,6 +243,7 @@ function init(){
         localVideo.srcObject = stream;
         $('#lobby-video')[0].srcObject = stream;
         localVideo.muted = true;
+        $('#lobby-video')[0].muted = true;
         localVideoStream = stream;
     }).catch((e)=>{
         console.log(e);
@@ -321,7 +320,10 @@ $('#hangup-button').on('click', function(e){
 $('.video-ele').on('click', focusVideo);
 
 function focusVideo(e){
+    if(window.innerWidth > 640)
+        return;
     e.preventDefault();
+
     if($('#focused-video>div').length){
         $('#video-wrapper')[0].appendChild($('#focused-video>div')[0]);
     }
