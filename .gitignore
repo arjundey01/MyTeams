@@ -3,6 +3,6 @@ env
 media
 db.sqlite3
 .vscode
-static
+/static
 logs
 supervisord.conf

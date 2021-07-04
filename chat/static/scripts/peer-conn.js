@@ -14,6 +14,7 @@ const videoDeviceConstraints = {
 const muted = {video: false, audio:false};
 
 let localVideoStream;
+let screenStream;
 
 function Peer(peer_username, was_requested=false, muted_status={audio:false, video:false}){
     this.username = peer_username;
@@ -287,12 +288,19 @@ $('#chat-input').on('keypress', function(e){
 
 $('.mute-button').on('click', function(e){
     const kind = $(this).attr('data-kind');
+
+    if(kind=='video' && $('#screen-share').attr('data-state')=='on')
+        return;
+
     muted[kind]=!muted[kind];
+
     localVideoStream.getTracks().forEach(track=>{
         if(track.kind == kind)
             track.enabled = !muted[kind];
     })
+
     $(`.mute-button[data-kind="${kind}"]`).toggleClass('mute-button-active');
+
     if(kind=='audio'){
         $('#local-video-wrp .video-muted').toggleClass('hidden');
     }
@@ -302,6 +310,7 @@ $('.mute-button').on('click', function(e){
         $('#lobby-video-wrp .video-off').toggleClass('hidden');
         $('#lobby-video-wrp video').toggleClass('hidden');
     }
+
     if(loggedIn){
         signalingChannel.send(JSON.stringify({
             type: 'mute',
@@ -316,6 +325,58 @@ $('#hangup-button').on('click', function(e){
     $("#chat-room").addClass('hidden');
     $("#thankyou-screen").removeClass('hidden');
 })
+
+$('#screen-share').on('click', async function(e){
+    const state = $(this).attr('data-state');
+    if(state=='off'){
+        onStartScreenShare();
+    }else{
+        onStopScreenShare();
+    }
+})
+
+async function onStartScreenShare(){
+    try{
+        screenStream = await navigator.mediaDevices.getDisplayMedia();
+        for(const peer in peers ){
+            var sender = peers[peer].peerConn.getSenders().find(function(s) {
+                return s.track.kind == 'video';
+            });
+            sender.replaceTrack(screenStream.getTracks()[0]);
+        };
+        screenStream.getTracks()[0].onended = onStopScreenShare;
+        if(!muted.video){
+            $('#local-video-wrp .video-off').toggleClass('hidden');
+            $('#local-video-wrp video').toggleClass('hidden');
+        }
+        $('.mute-button[data-kind="video"]').css('opacity','0.5');
+        $('#screen-share').attr('data-state','on');
+        $('#screen-share').toggleClass('screen-share-active');
+    }catch(e){    
+        console.log('Error: Could not capture screen.',e.name);
+        if(e.name=="NotAllowedError")
+            alert('Sorry, screen sharing is not supported for this device.')
+        else
+            alert('Sorry, some error occured :(');
+    }
+}
+
+function onStopScreenShare(){
+    for(const peer in peers ){
+        var sender = peers[peer].peerConn.getSenders().find(function(s) {
+            return s.track.kind == 'video';
+        });
+        sender.replaceTrack(localVideoStream.getVideoTracks()[0]);
+    };
+    screenStream.getTracks()[0].stop();
+    if(!muted.video){
+        $('#local-video-wrp .video-off').toggleClass('hidden');
+        $('#local-video-wrp video').toggleClass('hidden');
+    }
+    $('.mute-button[data-kind="video"]').css('opacity','1');
+    $('#screen-share').attr('data-state','off');
+    $('#screen-share').toggleClass('screen-share-active');
+}
 
 $('.video-ele').on('click', focusVideo);
 

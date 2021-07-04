@@ -34,7 +34,7 @@ video::-webkit-media-controls-enclosure {
     width: 320px;
 }
 
-.mute-button path{
+.action-button path{
     fill: #666;
 }
 
@@ -43,6 +43,14 @@ video::-webkit-media-controls-enclosure {
 }
 
 .mute-button-active path{
+    fill:#fff;
+}
+
+.screen-share-active{
+    background: #86c476;
+}
+
+.screen-share-active path{
     fill:#fff;
 }
 

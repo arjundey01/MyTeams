@@ -55,20 +55,28 @@
         <div class="h-20 w-full flex justify-center items-center bg-gray-700 flex-shrink-0 relative">
 
             <div class="flex justify-center flex-grow">
-                <div data-kind="audio" class="mute-button p-2.5 h-11 w-11 mx-2 flex items-center justify-center cursor-pointer rounded-full bg-gray-800">
+                <div data-kind="audio" class="mute-button action-button p-2.5 h-11 w-11 mx-2 flex items-center justify-center cursor-pointer rounded-full bg-gray-800">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512" class="flex-grow" >
                         <path d="M633.82 458.1l-157.8-121.96C488.61 312.13 496 285.01 496 256v-48c0-8.84-7.16-16-16-16h-16c-8.84 0-16 7.16-16 16v48c0 17.92-3.96 34.8-10.72 50.2l-26.55-20.52c3.1-9.4 5.28-19.22 5.28-29.67V96c0-53.02-42.98-96-96-96s-96 42.98-96 96v45.36L45.47 3.37C38.49-2.05 28.43-.8 23.01 6.18L3.37 31.45C-2.05 38.42-.8 48.47 6.18 53.9l588.36 454.73c6.98 5.43 17.03 4.17 22.46-2.81l19.64-25.27c5.41-6.97 4.16-17.02-2.82-22.45zM400 464h-56v-33.77c11.66-1.6 22.85-4.54 33.67-8.31l-50.11-38.73c-6.71.4-13.41.87-20.35.2-55.85-5.45-98.74-48.63-111.18-101.85L144 241.31v6.85c0 89.64 63.97 169.55 152 181.69V464h-56c-8.84 0-16 7.16-16 16v16c0 8.84 7.16 16 16 16h160c8.84 0 16-7.16 16-16v-16c0-8.84-7.16-16-16-16z"></path>
                     </svg>
                 </div>
 
-                <div data-kind="video" class="mute-button p-2.5 h-11 w-11 mx-2 flex items-center justify-center cursor-pointer rounded-full bg-gray-800">
+                <div data-kind="video" class="mute-button action-button p-2.5 h-11 w-11 mx-2 flex items-center justify-center cursor-pointer rounded-full bg-gray-800">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512" class="flex-grow" >
                         <path d="M633.8 458.1l-55-42.5c15.4-1.4 29.2-13.7 29.2-31.1v-257c0-25.5-29.1-40.4-50.4-25.8L448 177.3v137.2l-32-24.7v-178c0-26.4-21.4-47.8-47.8-47.8H123.9L45.5 3.4C38.5-2 28.5-.8 23 6.2L3.4 31.4c-5.4 7-4.2 17 2.8 22.4L42.7 82 416 370.6l178.5 138c7 5.4 17 4.2 22.5-2.8l19.6-25.3c5.5-6.9 4.2-17-2.8-22.4zM32 400.2c0 26.4 21.4 47.8 47.8 47.8h288.4c11.2 0 21.4-4 29.6-10.5L32 154.7v245.5z"></path>
                     </svg>
                 </div>
 
-                <div id="hangup-button" class=" p-3 h-11 w-11 mx-2 flex items-center justify-center cursor-pointer rounded-full bg-red-500">
+                <div id="hangup-button" class="action-button p-3 h-11 w-11 mx-2 flex items-center justify-center cursor-pointer rounded-full bg-red-500">
                     <img src="/static/img/hang-up.svg">
+                </div>
+
+                <div id="screen-share" data-state="off" class="action-button h-11 w-11 mx-2 flex items-center justify-center cursor-pointer rounded-full bg-gray-800">
+                    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" xml:space="preserve" height="25px" width="25px">
+                        <path d="M480,32H32C14.328,32,0,46.326,0,64v288c0,17.673,14.328,32,32,32h176v32h-32c-17.672,0-32,14.326-32,32
+                            c0,17.673,14.328,32,32,32h160c17.672,0,32-14.327,32-32c0-17.674-14.328-32-32-32h-32v-32h176c17.672,0,32-14.327,32-32V64
+                            C512,46.326,497.672,32,480,32z M448,320H64V96h384V320z"/>
+                    </svg>
                 </div>
             </div>
 
