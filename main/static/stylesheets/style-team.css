@@ -1,0 +1,15 @@
+.team-info{
+    right: -100vw;
+}
+.team-info-active{
+    right: 0;
+}
+
+@media (min-width: 768px){
+    .team-info{
+        right: -320px;
+    }   
+    .team-info-active{
+        right: 0;
+    }
+}

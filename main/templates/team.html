@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% load extra_tags %}
+{% block head %}
+    <title>{{team.title}} | MyTeams</title>
+{%endblock%}
+{%block style%}
+    <link rel="stylesheet" href="/static/stylesheets/style-team.css">
+{%endblock%}
+{% block content %}
+    <div class="w-full h-fullscreen flex flex-col">
+        <div class="flex w-full bg-gray-800 h-16 justify-between items-center px-3 sm:px-6 md:rounded-t-lg">
+            <div class="flex items-center ml-3">
+                {% if team.logo_url %}
+                <img src="{{team.logo.url}}" class="rounded-full h-10 w-10 object-cover">
+                {% else %}
+                <div class="rounded-full flex items-center justify-center text-2xl h-10 w-10" style="background-color: bisque;">
+                    {{team | team_logo}}
+                </div>
+                {% endif %}
+                <p class="text-white text-lg ml-3 hidden sm:block">{{team.title}}</p>
+            </div>
+            <div class="flex">
+                <img src="/static/img/video.svg" id="team-video-btn" title="Start/Join Video Call"  
+                class="rounded-full h-10 w-10 p-2 mx-1 sm:mx-3 object-contain cursor-pointer hover:bg-gray-700">
+                <img src="/static/img/info.svg" id="team-info-btn" title="Team Info" 
+                class="rounded-full h-10 w-10 p-2 mx-1 sm:mx-3 object-contain cursor-pointer hover:bg-gray-700">
+                <img src="/static/img/add-member.svg" id="team-leave-btn" title="Add Member" 
+                class="rounded-full h-10 w-10 p-2 mx-1 sm:mx-3 object-contain cursor-pointer hover:bg-gray-700">
+            </div>
+        </div>
+        <div class="flex-grow bg-gray-700 relative">
+            <div class="team-info absolute w-full sm:w-80 h-full duration-500 px-4 py-5
+             bg-gray-900 border-solid border-b-2 border-t-2 border-gray-700 flex flex-col items-center">
+                {% if team.logo_url %}
+                <img src="{{team.logo_url}}" class="rounded-full h-32 w-32 object-cover">
+                {% else %}
+                <div class="rounded-full flex items-center justify-center text-7xl h-32 w-32" style="background-color: bisque;">
+                    {{team | team_logo}}
+                </div>
+                {% endif %}
+                <div class="w-full mt-3">
+                    <p class="w-full text-center text-white text-xl px-5">{{team.title}}</p>
+                    <div class="w-full flex justify-center mt-2">
+                        <img src="/static/img/add-member.svg" title="Add Member" class="add-member-btn mx-2 h-5 w-5 cursor-pointer">
+                        <img src="/static/img/leave.svg" title="Leave Team" class="team-leave-btn mx-2 h-5 w-5 cursor-pointer">
+                    </div>
+                </div>
+                <p class="w-full mt-3 text-white"> Members</p>
+                <div class="flex-grow py-3 w-full">
+                    {% for member in team.members %}
+                    <div class="flex py-2 px-2 items-center">
+                        {% if member.logo_url %}
+                        <img src="{{member.logo_url}}" class="rounded-full h-10 w-10 object-cover">
+                        {% else %}
+                        <div class="rounded-full flex items-center justify-center text-xl h-10 w-10" style="background-color: bisque;">
+                            A
+                        </div>
+                        {% endif %}
+                        <p class="text-gray-100 text-sm ml-2">{{member.name}}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="flex w-full bg-gray-800 h-16 items-center justify-center rounded-b-lg px-5 sm:px-10">
+            <div class="flex bg-gray-500 rounded-full items-center" style="width: 500px;">
+                <input type="text" id="conv-input" class="bg-transparent ml-5 my-2 flex-grow min-w-0" placeholder="Write something...">
+                <img src="/static/img/send.svg" class="h-6 w-6 object-contain cursor-pointer mr-4">
+            </div>
+        </div>        
+    </div>
+{% endblock %}
+
+{%block scripts%}
+    <script src="/static/scripts/team.js"></script>
+{%endblock%}

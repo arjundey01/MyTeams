@@ -1,0 +1,30 @@
+:root{
+    --vh:100vh;
+}
+
+::-webkit-scrollbar {
+    display: none;
+}
+
+input:focus, textarea:focus, select:focus{
+    outline: none;
+}
+
+* {
+    -ms-overflow-style: none; 
+    scrollbar-width: none; 
+}
+
+.h-fullscreen{
+    height: var(--vh);
+}
+
+.flex-center{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#main-container{
+    min-height: var(--vh);
+}

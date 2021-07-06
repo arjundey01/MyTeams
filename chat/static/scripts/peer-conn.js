@@ -4,7 +4,7 @@ const callButton = document.getElementById('call-button');
 const roomName =  document.getElementById('room-name').textContent;
 let selfUsername;
 let loggedIn = false;
-const RTCPeerConfig = {"iceServers":[{"url":"stun:stun2.1.google.com:19302"}]};
+const RTCPeerConfig = {iceServers:[{urls:"stun:stun.l.google.com:19302"}, {urls:"stun:stun.services.mozilla.com"}]};
 
 const peers={};
 const videoDeviceConstraints = {

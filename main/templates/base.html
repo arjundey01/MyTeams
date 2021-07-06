@@ -1,0 +1,41 @@
+<html lang="en">
+{% load extra_tags %}
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% block head %}{% endblock %}
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="/static/stylesheets/style-base.css">
+    {% block style %}{% endblock %}
+</head>
+<body class="bg-gray-900 {% if not hide_header %}pt-20{% endif %}">
+    {% if not hide_header %}
+    <div class="header flex items-center justify-between px-5 py-5 fixed top-0 w-full bg-gray-900">
+        <div class="flex items-center">
+            <img src="/static/img/logo.svg" class="h-10" alt="">
+            <p class="text-3xl text-white font-medium ml-4">MyTeams</p>
+        </div>
+        {% if not user.is_authenticated %}
+        <div class="login-button hidden sm:block rounded-full px-7 py-0.5 bg-blue-500 text-white text-lg cursor-pointer">Log In</div>
+        {% else %}
+        <div id="header-profile" class="flex items-center cursor-pointer overflow-visible relative">
+            <div class="rounded-full flex items-center justify-center text-2xl h-10 w-10" style="background-color: bisque;">
+                {{user|user_logo}}
+            </div>
+            <p class="text-white ml-3 hidden sm:block">{{user.username}}</p>
+            <div id="header-profile-options" class="absolute top-12 right-0 bg-gray-800 text-white p-1 w-28 rounded hidden">
+                <p class="hover:bg-gray-700 p-1">Sign Out</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+    {% block content %}
+    {%endblock%}
+</body>
+<script src="/static/scripts/base.js"></script>
+{% block scripts %}
+{%endblock%}
+</html>
