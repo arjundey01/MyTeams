@@ -28,3 +28,7 @@ input:focus, textarea:focus, select:focus{
 #main-container{
     min-height: var(--vh);
 }
+
+#overlay{
+    background-color: rgba(0,0,0,0.5);
+}

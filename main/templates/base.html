@@ -24,9 +24,9 @@
             <div class="rounded-full flex items-center justify-center text-2xl h-10 w-10" style="background-color: bisque;">
                 {{user|user_logo}}
             </div>
-            <p class="text-white ml-3 hidden sm:block">{{user.username}}</p>
+            <p class="text-white ml-3 hidden sm:block">{{user.account.name}}</p>
             <div id="header-profile-options" class="absolute top-12 right-0 bg-gray-800 text-white p-1 w-28 rounded hidden">
-                <p class="hover:bg-gray-700 p-1">Sign Out</p>
+                <a href="{% url 'signout' %}"><p class="hover:bg-gray-700 p-1 w-full" >Sign Out</p></a>
             </div>
         </div>
         {% endif %}
@@ -34,6 +34,12 @@
     {% endif %}
     {% block content %}
     {%endblock%}
+
+    <div id="overlay" class="flex w-screen h-screen sm:items-center justify-center fixed top-0 left-0 hidden">
+        {% block overlay %}
+        {% endblock %}
+    </div>
+
 </body>
 <script src="/static/scripts/base.js"></script>
 {% block scripts %}

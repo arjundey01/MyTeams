@@ -16,8 +16,8 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='VideoChatRoom',
             fields=[
-                ('name', models.CharField(max_length=100, primary_key=True, serialize=False)),
-                ('active_members', models.JSONField()),
+                ('room_id', models.CharField(max_length=100, primary_key=True, serialize=False)),
+                ('active_members', models.JSONField(default=list)),
                 ('members', models.ManyToManyField(related_name='video_chat_rooms', to=settings.AUTH_USER_MODEL)),
             ],
         ),

@@ -1,8 +1,10 @@
 env
 **/__pycache__/
-media
+/media
 db.sqlite3
 .vscode
 /static
 logs
 supervisord.conf
+MyTeams/.env
+
