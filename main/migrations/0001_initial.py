@@ -10,7 +10,6 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('chat', '0002_remove_videochatroom_members'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
@@ -20,9 +19,9 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('title', models.CharField(max_length=50)),
-                ('logo', models.ImageField(upload_to='team-logos/')),
+                ('logo', models.ImageField(upload_to='team-logos/', blank=True, null=True)),
                 ('members', models.ManyToManyField(related_name='teams', to=settings.AUTH_USER_MODEL)),
-                ('room', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='team', to='chat.videochatroom')),
+                ('room', models.CharField(max_length=100)),
             ],
         ),
         migrations.CreateModel(
@@ -30,7 +29,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=100)),
-                ('logo_url', models.URLField()),
+                ('logo_url', models.URLField(blank=True, null=True)),
                 ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
         ),

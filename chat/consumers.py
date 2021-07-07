@@ -1,8 +1,8 @@
-from chat.models import VideoChatRoom
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from django.contrib.auth.models import User
-import json
+from main.models import Team
+import json, time
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -23,7 +23,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 'username': self.username,
             }
         )
-        await self.logout_user(self.username)
         await self.channel_layer.group_discard(
             self.room_group_name,
             self.channel_name
@@ -32,24 +31,34 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         print('recieved', text_data)
         data=json.loads(text_data)
+
         if data['type']=='message':
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
                     'type': 'chat_message',
                     'username': self.username,
-                    'text': data['text']
+                    'text': data.get('text',"")
                 }
             )
+
         elif data['type']=='login':
-            active = await self.login_user(data['username'])
-            success = (type(active)==list)
-            await self.send(json.dumps(
-                {
-                    'type':'login',
-                    'payload':{'success':success,'channel_name':self.channel_name, 'active':active}
-                })
-            )
+            success, username, name = await self.login_user(data.get('name'))
+            if not success:
+                await self.send(text_data=json.dumps({'type':'login', 'payload':{'success':False}}))
+            else:
+                self.username = username
+                self.name = name
+                await self.send(text_data=json.dumps({'type':'login', 'payload':{'success':True,'username':username,'name':name}}))
+                await self.channel_layer.group_send(
+                    self.room_group_name,
+                    {
+                        'type': 'chat_join',
+                        'username': username,
+                        'name': name
+                    }
+                )
+
         elif data['type']=="offer":
             await self.channel_layer.group_send(
                 self.room_group_name,
@@ -60,6 +69,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     'target':data['target']
                 }
             )
+
         elif data['type']=="answer":
             await self.channel_layer.group_send(
                 self.room_group_name,
@@ -70,6 +80,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     'target':data['target']
                 }
             )
+
         elif data['type']=="candidate":
             await self.channel_layer.group_send(
                 self.room_group_name,
@@ -80,6 +91,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     'target':data['target']
                 }
             )
+
         elif data['type']=="ready":
             await self.channel_layer.group_send(
                 self.room_group_name,
@@ -90,16 +102,19 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     'muted': data['muted']
                 }
             )
+
         elif data['type']=="add-peer":
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
                     'type': 'chat_add_peer',
                     'username': self.username,
+                    'name': self.name,
                     'target': data['target'],
                     'muted':data['muted']
                 }
             )
+
         elif data['type']=="mute":
             await self.channel_layer.group_send(
                 self.room_group_name,
@@ -110,6 +125,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     'muted':data['muted']
                 }
             )
+    
+    async def chat_join(self, event):
+        if event['username'] != self.username:
+            await self.send(text_data=json.dumps({'type':'join', 'payload':{'username':event['username'], 'name':event['name']}}))
 
 
     async def chat_message(self, event):
@@ -145,6 +164,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if event['target'] == self.username:
             await self.send(text_data=json.dumps({'type':'add-peer','payload':{
                 'username':event['username'],
+                'name':event['name'],
                 'muted': event['muted']}}))
 
     async def chat_leave(self, event):
@@ -160,27 +180,18 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 'muted':event['muted']}}))
 
     @database_sync_to_async
-    def login_user(self,user):
-        v_room, created = VideoChatRoom.objects.get_or_create(name = self.room_group_name)
-        active = v_room.active_members
-        if user in active:
-            return False
-        new_active = set(active[:])
-        new_active.add(user)
-        v_room.active_members = list(new_active)
-        v_room.save()
-        self.username = user
-        return list(active)
-    
-    @database_sync_to_async
-    def logout_user(self,user):
+    def login_user(self, name):
         try:
-            v_room = VideoChatRoom.objects.get(name = self.room_group_name)
-            active = v_room.active_members
-            if user in active:
-                active.remove(user)
-            v_room.active_members = active
-            v_room.save()
-            return
-        except VideoChatRoom.DoesNotExist:
-            return
+            team = Team.objects.get(room = self.room_name)
+            if self.scope['user'].is_authenticated:
+                if self.scope['user'] in team.members.all():
+                    return [True, self.scope['user'].username, self.scope['user'].account.name]
+            return [False,"",""]
+        except Team.DoesNotExist:
+            if self.scope['user'].is_authenticated:
+                return [True, self.scope['user'].username, self.scope['user'].account.name]
+            else:
+                username = ''.join(list(filter(lambda x:x.isalpha(),name)))
+                username = username + '_' + str(int(time.time()))
+                return [True,username,name]
+    

@@ -1,4 +1,3 @@
-from chat.models import VideoChatRoom
 from main.forms import TeamForm
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth import logout, login
@@ -32,8 +31,11 @@ def aad_callback(request):
     token = get_token_from_code(request.get_full_path(), expected_state)
     user = get_user(token)
 
-    if not User.objects.filter(username=user['mail']).exists():
-        new_user = User.objects.create_user(user['mail'])
+    if not User.objects.filter(email=user['mail']).exists():
+        new_user = User()
+        tmp = user['mail'].split('@')[0:2]
+        new_user.username = '_'.join(['_'.join(tmp[0].split('.')),tmp[1].split('.')[0]])
+        new_user.email = user['mail']
         new_user.save()
         account = Account()
         account.user = new_user
@@ -41,7 +43,7 @@ def aad_callback(request):
         account.email = user['mail']
         account.save()
 
-    login(request, User.objects.get(username=user['mail']))
+    login(request, User.objects.get(email=user['mail']))
 
     store_token(request, token)
     return redirect('/')
@@ -60,10 +62,7 @@ def create_team(request):
         form = TeamForm(request.POST, request.FILES)
         if form.is_valid():
             team = form.save(commit=False)
-            video_room = VideoChatRoom()
-            video_room.room_id = team.title.lower().replace(' ','-') + '-' + str(int(time.time())) 
-            video_room.save()
-            team.room = video_room
+            team.room = team.title.lower().replace(' ','-') + '-' + str(int(time.time())) 
             team.save()
             team.members.add(request.user)
             team.save()

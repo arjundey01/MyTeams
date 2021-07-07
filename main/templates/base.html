@@ -18,7 +18,10 @@
             <p class="text-3xl text-white font-medium ml-4">MyTeams</p>
         </div>
         {% if not user.is_authenticated %}
-        <div class="login-button hidden sm:block rounded-full px-7 py-0.5 bg-blue-500 text-white text-lg cursor-pointer">Log In</div>
+        <a href="https://microsoft.acehacker.com/engage2021/" class="hidden sm:flex text-white text-lg cursor-pointer items-center">
+            <img src="/static/img/microsoft-logo.svg" class="h-8 w-8 mr-3">
+            Engage 2021
+        </a>
         {% else %}
         <div id="header-profile" class="flex items-center cursor-pointer overflow-visible relative">
             <div class="rounded-full flex items-center justify-center text-2xl h-10 w-10" style="background-color: bisque;">

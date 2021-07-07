@@ -2,6 +2,12 @@ $('.chat-toggle').on('click', function(e){
     $('#chat-panel').toggleClass('chat-panel-active');
 })
 
+$('#invite-people').on('click', function(e){
+    navigator.clipboard.writeText(window.location.href)
+    .then(()=>{alert('Invite link copied!');})
+    .catch(()=>{alert('Could not copy invite link :(')});
+})
+
 const videosContainer = $('#video-wrapper')[0];
 
 function appendVideoElement(ele){

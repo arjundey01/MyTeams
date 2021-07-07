@@ -31,9 +31,9 @@
         </div>
         {% endif %}
     </div>
-    <div class="start-meet p-3 h-14 w-14 mx-2 flex-center cursor-pointer rounded-full bg-blue-500 fixed bottom-10 right-10">
+    <a href="{% url 'chat:instant-meet' %}" class="start-meet p-3 h-14 w-14 mx-2 flex-center cursor-pointer rounded-full bg-blue-500 fixed bottom-10 right-10">
         <img src="/static/img/video.svg" title="Start instant meet">
-    </div>
+    </a>
 {% endblock %}
 
 {% block overlay %}

@@ -7,4 +7,5 @@ db.sqlite3
 logs
 supervisord.conf
 MyTeams/.env
+oauth_settings.yml
 

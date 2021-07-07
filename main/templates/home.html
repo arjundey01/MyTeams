@@ -15,11 +15,14 @@
     <div class="home-cont w-screen bg-gray-900 flex flex-col">
         <div class="flex-grow flex flex-col-reverse md:flex-row px-5 sm:px-10 items-center justify-between">
             <div class="flex-grow" style="max-width: 700px;">
-                <p class="text-white text-2xl">Connet . Collaborate . Create</p>
+                <p class="text-white text-2xl">Connect . Collaborate . Create</p>
                 <p class="text-white mt-5 sm:mt-10">MyTeams is a social communitcation platform to connect with your colleagues and friends. It provides features such as Teams, Instant Video Chat, Screen Sharing and Conversations, so that you can connect the way you like.</p>
                 <div class="flex w-full mt-5 sm:mt-10 mb-5">
-                    <a id="login-button" href="{% url 'signin' %}" class="rounded flex-shrink-0 px-7 py-1 bg-blue-500 text-white sm:text-lg cursor-pointer">Sign In</a>
-                    <div id="start-meet" class="rounded flex-shrink-0 px-4 py-1 ml-6 bg-transparent border-solid border-2 border-white text-white sm:text-lg cursor-pointer">Start a Meet</div>
+                    <a id="login-button" href="{% url 'signin' %}" class="rounded flex-shrink-0 flex items-center px-7 py-1 bg-blue-500 text-white sm:text-lg cursor-pointer">
+                        <img src="/static/img/microsoft-logo.svg" class="w-4 h-4 mr-2">
+                        Sign In
+                    </a>
+                    <a id="start-meet" href="{% url 'chat:instant-meet' %}" class="rounded flex-shrink-0 px-4 py-1 ml-6 bg-transparent border-solid border-2 border-white text-white sm:text-lg cursor-pointer">Start a Meet</a>
                 </div>
             </div>
             <div style="max-width: 700px;" class="md:ml-10 flex-grow flex-shrink">

@@ -1,12 +1,10 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.db.models.fields.related import OneToOneField
-from chat.models import VideoChatRoom
-
+from django.db.models.fields import CharField
 class Account(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
-    logo_url = models.URLField()
+    logo_url = models.URLField(blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -14,9 +12,9 @@ class Account(models.Model):
 
 class Team(models.Model):
     title = models.CharField(max_length=50)
-    room = OneToOneField(VideoChatRoom, on_delete=models.CASCADE, related_name='team')
+    room = CharField(max_length=100)   
     members = models.ManyToManyField(User, related_name='teams')
-    logo = models.ImageField(upload_to='team-logos/')
+    logo = models.ImageField(upload_to='team-logos/', blank=True, null=True)
 
     @property
     def logo_url(self):

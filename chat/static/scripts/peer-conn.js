@@ -1,8 +1,8 @@
 const localVideo = document.getElementById('local-video');
-const remoteVideo = document.getElementById('remote-video');
 const callButton = document.getElementById('call-button');
 const roomName =  document.getElementById('room-name').textContent;
 let selfUsername;
+let selfName;
 let loggedIn = false;
 const RTCPeerConfig = {iceServers:[{urls:"stun:stun.l.google.com:19302"}, {urls:"stun:stun.services.mozilla.com"}]};
 
@@ -16,8 +16,9 @@ const muted = {video: false, audio:false};
 let localVideoStream;
 let screenStream;
 
-function Peer(peer_username, was_requested=false, muted_status={audio:false, video:false}){
+function Peer(peer_username, peer_name, was_requested=false, muted_status={audio:false, video:false}){
     this.username = peer_username;
+    this.name = peer_name
     this.remoteVideo = null;
     this.peerConn = null;
     this.muted = muted_status;
@@ -37,8 +38,8 @@ Peer.prototype.createVideo = function(){
     let temp = document.getElementById("remote-video-temp");
     let remoteVideoEle = temp.content.cloneNode(true);
     $("video", remoteVideoEle).attr('id',`remote-video-${this.username}`);
-    $(".video-name", remoteVideoEle).text(this.username);
-    $(".video-logo", remoteVideoEle).text(this.username[0].toUpperCase());
+    $(".video-name", remoteVideoEle).text(this.name);
+    $(".video-logo", remoteVideoEle).text(this.name[0].toUpperCase());
     appendVideoElement(remoteVideoEle);
     $(`#remote-video-${this.username}`).parent().on('click', focusVideo);
 
@@ -163,6 +164,9 @@ signalingChannel.onmessage = (msg)=>{
         case 'login':
             handleLogin(data.payload);
             break;
+        case 'join':
+            handleJoin(data.payload);
+            break;
         case 'add-peer':
             handleAddPeer(data.payload);
             break;
@@ -197,29 +201,40 @@ signalingChannel.onerror = (err)=>{
 }
 
 
-function handleLogin({success, active}){
-    console.log(active);
+function handleLogin({success, username, name}){
+    console.log(username," logging in...");
     if(success){
-        if(active.length){
-        active.forEach(user => {
-            if(user == selfUsername)return;
-                const peer = new Peer(user);
-                peers[user] = peer;
-            });
-        }
+        selfUsername = username;
+        selfName = name;
         $('#lobby').addClass('hidden');
         $('#chat-room').removeClass('hidden');
-        $('#local-video-wrp .video-name').text(selfUsername);
-        $('#local-video-wrp .video-logo').text(selfUsername[0].toUpperCase());
+        $('#local-video-wrp .video-name').text(selfName);
+        $('#local-video-wrp .video-logo').text(selfName[0].toUpperCase());
         loggedIn = true;
     }
     else{
         $('.error-msg').addClass('hidden');
-        $('#username-error').removeClass('hidden');
+        $('#login-error').text('Sorry! You cannot join this room.');
+        $('#login-error').removeClass('hidden');
     }
 }
 
-function handleAddPeer ({username, muted}){
+function handleJoin({username, name}){
+    console.log(name, 'joined!');
+    if(username != selfUsername){
+        if(peers[username]){
+            peers[username].createVideo();
+            peers[username].initConn();
+            signalingChannel.send(JSON.stringify({type:"add-peer", target:username, muted:getMuteStatus()}));
+            return;
+        }
+        const peer = new Peer(username, name);
+        peers[username] = peer;
+    }
+}
+
+function handleAddPeer ({username, name, muted}){
+    if(!loggedIn)return;
     if(username == selfUsername)return;
     if(peers[username]){
         peers[username].createVideo();
@@ -227,7 +242,7 @@ function handleAddPeer ({username, muted}){
         signalingChannel.send(JSON.stringify({type:"ready", target:username, muted:getMuteStatus()}));
         return;
     }
-    const peer = new Peer(username, true, muted);
+    const peer = new Peer(username, name ,true, muted);
     peers[username] = peer;
 }
 
@@ -245,8 +260,14 @@ function init(){
         $('#lobby-video')[0].srcObject = stream;
         localVideo.muted = true;
         $('#lobby-video')[0].muted = true;
+        $('#lobby-video-loading').hide();
         localVideoStream = stream;
     }).catch((e)=>{
+        $('#lobby-video-loading').hide();
+        $('#lobby-camera-access-err').removeClass('hidden');
+        $('#join-button').off('click');
+        $('#join-button').removeClass('cursor-pointer');
+        $('#join-button').css('opacity','0.5');
         console.log(e);
     });
 }
@@ -266,9 +287,9 @@ function getMuteStatus(){
 // });
 
 $('#join-button').on('click', function(e){
-    selfUsername = $('#username-input').val();
-    if(selfUsername != ""){
-        signalingChannel.send(JSON.stringify({type:'login', username: selfUsername}));
+    selfName = $('#username-input').val();
+    if(selfName != ""){
+        signalingChannel.send(JSON.stringify({type:'login', name: selfName}));
     }
     else{
         $('.error-msg').addClass('hidden');
