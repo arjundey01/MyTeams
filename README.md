@@ -28,6 +28,10 @@
 - Run `python3 manage.py makemigrations`
 - Run `python3 manage.py migrate --run-syncdb`. _Note: Use the argument `--run-syncdb` only for installation_.
 
+#### Configuration:
+- Create the file `MyTeams/.env` following the example `MyTeams/.env_example`.
+- Create the file `outh_settings.yml` following the example `oauth_settings_example.yml`.
+
 
 ## Starting the server:
 - Activate the virtual environment.

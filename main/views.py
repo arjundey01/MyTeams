@@ -30,20 +30,20 @@ def aad_callback(request):
     expected_state = request.session.pop('auth_state', '')
     token = get_token_from_code(request.get_full_path(), expected_state)
     user = get_user(token)
-
+    email = user['mail'] if (user['mail'] != None) else user['userPrincipalName']
     if not User.objects.filter(email=user['mail']).exists():
         new_user = User()
-        tmp = user['mail'].split('@')[0:2]
+        tmp = email.split('@')[0:2]
         new_user.username = '_'.join(['_'.join(tmp[0].split('.')),tmp[1].split('.')[0]])
-        new_user.email = user['mail']
+        new_user.email = email
         new_user.save()
         account = Account()
         account.user = new_user
         account.name = user['displayName']
-        account.email = user['mail']
+        account.email = email
         account.save()
 
-    login(request, User.objects.get(email=user['mail']))
+    login(request, User.objects.get(email=email))
 
     store_token(request, token)
     return redirect('/')

@@ -8,4 +8,6 @@ logs
 supervisord.conf
 MyTeams/.env
 oauth_settings.yml
-
+startup.py
+start.sh
+stop.sh
