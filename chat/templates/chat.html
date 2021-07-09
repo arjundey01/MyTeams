@@ -42,7 +42,14 @@
                     <img src="/static/img/close.svg" class="chat-toggle h-5 w-5 cursor-pointer" alt="">
                 </div>
                 <div id="chat-msg-wrp" class="flex-grow w-full px-3 overflow-y-scroll mx-3">
-
+                    {% for msg in prev_chats %}
+                        {% if msg.type == 'T' %}
+                        <div class="my-4">
+                            <p class="chat-author text-sm font-medium">{{msg.user.account.name}}</p>
+                            <p class="chat-text text-gray-500 text-sm">{{msg.text}}</p>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
                 </div>
                 <div class="my-2 bg-gray-200 rounded-full py-2 px-5 mx-3 mb-4">
                     <input type="text" class="bg-transparent w-full" id="chat-input" placeholder="Send message...">
@@ -85,7 +92,8 @@
                 </div>
             </div>
 
-            <div class="chat-toggle absolute top-20 left-5 sm:static h-12 w-12 sm:mr-8 p-3.5 flex items-center justify-center cursor-pointer rounded-full bg-gray-800">
+            <div class="chat-toggle absolute top-20 left-5 sm:relative sm:top-0 sm:left-0 sm: h-12 w-12 sm:mr-8 p-3.5 flex items-center justify-center cursor-pointer rounded-full bg-gray-800 relative">
+                <div id="new-msg-indicator" class="bg-red-400 absolute rounded-full top-3 right-2.5 h-2 w-2 hidden"></div>
                 <img src="/static/img/chat.svg">
             </div>
 

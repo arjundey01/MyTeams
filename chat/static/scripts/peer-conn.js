@@ -255,6 +255,10 @@ function handleMessage({username, text, name}){
     $('.chat-author',p).text(name);
     $('.chat-text',p).text(text);
     $('#chat-msg-wrp').append(p);
+    $('#chat-msg-wrp')[0].scrollTo(0,$('#chat-msg-wrp')[0].scrollHeight);
+    if(!$('#chat-panel').hasClass('chat-panel-active')){
+        $('#new-msg-indicator').removeClass('hidden');
+    };
 }
 
 function init(){
@@ -415,3 +419,7 @@ function focusVideo(e){
     $('#focused-video').html("");
     $('#focused-video')[0].appendChild(this);
 }
+
+$('.back-button').on('click',function(){
+    window.history.back();
+})

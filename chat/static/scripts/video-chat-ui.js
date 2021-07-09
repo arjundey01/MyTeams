@@ -1,6 +1,11 @@
 $('.chat-toggle').on('click', function(e){
     $('#chat-panel').toggleClass('chat-panel-active');
+    if($('#chat-panel').hasClass('chat-panel-active')){
+        $('#new-msg-indicator').addClass('hidden');
+        $('#chat-msg-wrp')[0].scrollTo(0,$('#chat-msg-wrp')[0].scrollHeight);
+    };
 })
+
 
 $('#invite-people').on('click', function(e){
     navigator.clipboard.writeText(window.location.href)
