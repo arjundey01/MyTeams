@@ -26,7 +26,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     'name': self.name
                 }
             )
-            await self.save_message(self.scope['user'].account.name + ' left the video chat.','J')
+            if hasattr(self, 'team'):
+                await self.save_message(self.scope['user'].account.name + ' left the video chat.','L')
         await self.channel_layer.group_discard(
             self.room_group_name,
             self.channel_name

@@ -5,6 +5,7 @@ class Account(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     logo_url = models.URLField(blank=True, null=True)
+    new_notif = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
@@ -14,6 +15,7 @@ class Team(models.Model):
     title = models.CharField(max_length=50)
     room = CharField(max_length=100)   
     members = models.ManyToManyField(User, related_name='teams')
+    invited = models.ManyToManyField(User, related_name='invited_to')
     logo = models.ImageField(upload_to='team-logos/', blank=True, null=True)
 
     @property

@@ -7,7 +7,7 @@
 {% block content %}
     <div class="flex justify-center flex-wrap items-start pb-10" style="min-height: calc(var(--vh) - 80px);">
         {% for team in user.teams.all %}
-        <div class="team-thumbnail cursor-pointer w-64 mt-6 rounded mx-3 flex-grow sm:flex-grow-0 flex flex-col" data-name="{{team.title}}">
+        <div class="team-thumbnail cursor-pointer w-64 mt-6 rounded mx-3 flex-grow sm:flex-grow-0 flex flex-col rounded" data-name="{{team.title}}">
             <img src="{{team.logo_url}}" alt="" class="w-full h-52 sm:h-44 object-cover">
             <div class="flex flex-col items-center bg-white py-2 justify-between flex-grow px-5">
    
@@ -31,7 +31,7 @@
         </div>
         {% endif %}
     </div>
-    <a href="{% url 'chat:instant-meet' %}" class="start-meet p-3 h-14 w-14 mx-2 flex-center cursor-pointer rounded-full bg-blue-500 fixed bottom-10 right-10">
+    <a href="{% url 'chat:instant-meet' %}" class="start-meet p-3 h-14 w-14 mx-2 flex-center cursor-pointer rounded-full bg-blue-500 fixed bottom-5 right-5 sm:bottom-10 sm:right-10">
         <img src="/static/img/video.svg" title="Start instant meet">
     </a>
 {% endblock %}

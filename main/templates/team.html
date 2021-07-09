@@ -27,8 +27,8 @@
                 </a>
                 <img src="/static/img/info.svg" id="team-info-btn" title="Toggle Info Panel" 
                 class="rounded-full h-10 w-10 p-2 mx-1 sm:mx-3 object-contain cursor-pointer hover:bg-gray-700">
-                <img src="/static/img/add-member.svg" id="team-leave-btn" title="Add Member" 
-                class="rounded-full h-10 w-10 p-2 mx-1 sm:mx-3 object-contain cursor-pointer hover:bg-gray-700">
+                <img src="/static/img/add-member.svg" title="Add Member" 
+                class="invite-btn rounded-full h-10 w-10 p-2 mx-1 sm:mx-3 object-contain cursor-pointer hover:bg-gray-700">
             </div>
         </div>
 
@@ -47,7 +47,7 @@
                 <div class="w-full mt-3">
                     <p class="w-full text-center text-white text-xl px-5">{{team.title}}</p>
                     <div class="w-full flex justify-center mt-2">
-                        <img src="/static/img/add-member.svg" title="Add Member" class="add-member-btn mx-2 h-5 w-5 cursor-pointer">
+                        <img src="/static/img/add-member.svg" title="Add Member" class="invite-btn mx-2 h-5 w-5 cursor-pointer">
                         <img src="/static/img/leave.svg" title="Leave Team" class="team-leave-btn mx-2 h-5 w-5 cursor-pointer">
                     </div>
                 </div>
@@ -62,7 +62,22 @@
                             A
                         </div>
                         {% endif %}
-                        <p class="text-gray-100 text-sm ml-2">{{member.account.name}}</p>
+                        <p class="member-name text-gray-100 text-sm ml-2" data-username="{{member.username}}">{{member.account.name}}</p>
+                    </div>
+                    {% endfor %}
+                    {% for member in team.invited.all %}
+                    <div class="flex py-2 px-2 items-center justify-between">
+                        <div class="flex items-center">
+                            {% if member.logo_url %}
+                            <img src="{{member.logo_url}}" class="rounded-full h-10 w-10 object-cover">
+                            {% else %}
+                            <div class="rounded-full flex items-center justify-center text-xl h-10 w-10" style="background-color: bisque;">
+                                A
+                            </div>
+                            {% endif %}
+                            <p class="member-name text-gray-100 text-sm ml-2" data-username="{{member.username}}">{{member.account.name}}</p>
+                        </div>
+                        <p class="text-white rounded px-2 text-xs bg-gray-400">Invited</p>
                     </div>
                     {% endfor %}
                 </div>
@@ -112,14 +127,13 @@
    
         </div>
         
-        
+
     {% for member in team.members.all %}
         <input type="text" readonly hidden id="{{member.username}}-name" value="{{member.account.name}}">
         <input type="text" readonly hidden id="{{member.username}}-img" value="{{member.account.logo_url}}">
     {% endfor %}
 
     <input type="text" readonly hidden id="room-name" value="{{team.room}}">
-    <input type="text" readonly hidden id="username" value="{{user.username}}">
 
     <!-- CHAT MESSAGE TEMPLATES  -->
     <template id="info-msg-tmp">
@@ -149,6 +163,43 @@
             </div>
         </div>
     </template>
+
+    <!-- SEARCH RESULT TEMPLATE -->
+    <template id="search-res-tmp">
+        <div class="w-full flex items-center justify-between border-b-2 border-gray-200 py-2">
+            <div class="flex items-center">
+                <div class="res-logo rounded-full flex items-center justify-center text-xl h-9 w-9" style="background-color: bisque;">
+                    A
+                </div>
+                <p class="res-name ml-2 text-gray-500 font-light text-sm">Arjun Dey</p>
+            </div>
+            <div class="flex items-center">
+                <img src="/static/img/add-member.svg" class="res-invite bg-gray-900 h-7 w-7 p-1 rounded-full cursor-pointer" title="Send Invite" alt="">
+            </div>
+        </div>
+    </template>
+
+    <input type="text" id="team-id" readonly hidden value="{{team.id}}">
+{% endblock %}
+
+{% block overlay %}
+    <!-- ADD MEMBER OVERLAY -->
+    <div class="bg-white md:rounded px-6 py-5 w-full md:w-3/5 lg:w-2/5 h-full md:h-4/5 flex flex-col items-stretch">
+        <div class="flex justify-between items-center">
+            <p class="text-xl">Invite Users</p>
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" class="close-overlay cursor-pointer">
+                <path opacity="0.8" d="M1 13L13 1M1 1L13 13" stroke="#111827" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>   
+        </div>
+        <div class="flex items-center px-4 rounded-full py-2 mt-4 bg-gray-100 sm:mx-6">
+            <input type="text" id="user-search-input" class="bg-transparent flex-grow min-w-0" placeholder="Search user..." data-state="idle">
+            <img src="/static/img/search.svg" id="user-search-btn" alt="" class="h-6 w-6 cursor-pointer">
+        </div>
+        <p class="my-4">Results:</p>
+        <p id="search-res-msg" class="text-gray-500 text-center hidden">No Results</p>
+        <div id="search-res-wrp" class="flex-grow overflow-y-scroll rounded px-3 py-2">
+        </div>
+    </div>
 {% endblock %}
 
 {%block scripts%}
