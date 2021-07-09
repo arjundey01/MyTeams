@@ -67,7 +67,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             'name': name
                         }
                     )
-                    await self.save_message(self.scope['user'].account.name + ' joined the video chat.','J')
+                    if hasattr(self,'team'):
+                        await self.save_message(self.scope['user'].account.name + ' joined the video chat.','J')
 
         elif data['type']=="offer":
             await self.channel_layer.group_send(
@@ -208,7 +209,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def save_message(self, text, type = 'T'):
-        if self.team and self.scope['user'].is_authenticated and len(text):
+        if hasattr(self,'team') and self.scope['user'].is_authenticated and len(text):
             chat = ChatMessage()
             chat.user = self.scope['user']
             chat.team = self.team
