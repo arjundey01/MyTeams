@@ -1,6 +1,9 @@
+from chat.models import ChatMessage
+from django.http.response import HttpResponseForbidden
 from main.forms import TeamForm
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth import logout, login
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect, HttpResponse
 from .auth_helper import get_sign_in_url, get_token_from_code, store_token, store_user, remove_user_and_token, get_token
 from .graph_helper import get_user
@@ -14,10 +17,13 @@ def home(request):
     else:
         return render(request, 'home.html')
 
-
+@login_required
 def team(request, team_name):
     team=get_object_or_404(Team, title=team_name)
-    return render(request, 'team.html', context={'hide_header':True, 'team':team})
+    if request.user in team.members.all():
+        chats = ChatMessage.objects.filter(team=team).order_by('time')
+        return render(request, 'team.html', context={'hide_header':True, 'team':team, 'chats':chats})
+    return HttpResponseForbidden()
 
 
 def sign_in(request):

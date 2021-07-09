@@ -8,7 +8,8 @@
 {%endblock%}
 {% block content %}
     <div class="w-full h-fullscreen flex flex-col">
-        <div class="flex w-full bg-gray-800 h-16 justify-between items-center px-3 sm:px-6 md:rounded-t-lg">
+        <!-- HEADER -->
+        <div class="flex w-full bg-gray-800 h-16 justify-between items-center px-3 sm:px-6 flex-shrink-0">
             <div class="flex items-center ml-3">
                 {% if team.logo_url %}
                 <img src="{{team.logo.url}}" class="rounded-full h-10 w-10 object-cover">
@@ -24,15 +25,18 @@
                     <img src="/static/img/video.svg" id="team-video-btn" title="Start/Join Video Call"  
                     class="rounded-full h-10 w-10 p-2 mx-1 sm:mx-3 object-contain cursor-pointer hover:bg-gray-700">
                 </a>
-                <img src="/static/img/info.svg" id="team-info-btn" title="Team Info" 
+                <img src="/static/img/info.svg" id="team-info-btn" title="Toggle Info Panel" 
                 class="rounded-full h-10 w-10 p-2 mx-1 sm:mx-3 object-contain cursor-pointer hover:bg-gray-700">
                 <img src="/static/img/add-member.svg" id="team-leave-btn" title="Add Member" 
                 class="rounded-full h-10 w-10 p-2 mx-1 sm:mx-3 object-contain cursor-pointer hover:bg-gray-700">
             </div>
         </div>
-        <div class="flex-grow bg-gray-700 relative">
-            <div class="team-info absolute w-full sm:w-80 h-full duration-500 px-4 py-5
-             bg-gray-900 border-solid border-b-2 border-t-2 border-gray-700 flex flex-col items-center">
+
+        <div class="flex-grow flex w-full relative overflow-auto">
+
+            <!-- INFO PANEL -->
+            <div class="absolute team-info w-full sm:w-80 h-full duration-500 px-4 py-5
+                bg-gray-900 flex flex-col items-center">
                 {% if team.logo_url %}
                 <img src="{{team.logo_url}}" class="rounded-full h-32 w-32 object-cover">
                 {% else %}
@@ -63,14 +67,88 @@
                     {% endfor %}
                 </div>
             </div>
-        </div>
-        <div class="flex w-full bg-gray-800 h-16 items-center justify-center rounded-b-lg px-5 sm:px-10">
-            <div class="flex bg-gray-500 rounded-full items-center" style="width: 500px;">
-                <input type="text" id="conv-input" class="bg-transparent ml-5 my-2 flex-grow min-w-0" placeholder="Write something...">
-                <img src="/static/img/send.svg" class="h-6 w-6 object-contain cursor-pointer mr-4">
+
+            <div class="main-wrp flex-grow bg-gray-900 h-full flex flex-col items-stretch duration-500">
+                
+                <!-- CHAT MESSAGES -->
+                <div id="chats-wrapper" class="bg-gray-700 flex flex-col flex-grow px-3 py-4 overflow-y-scroll">
+                    {% for msg in chats %}
+                        {% if msg.type != 'T' %}
+                        <div class="bg-gray-600 rounded px-3 py-1 text-white self-center mt-4">
+                            <p class="text-center text-light" style="font-size: 10px;">{{ msg.time|date:'d/M/Y, f A'}}: {{msg.text}}</p>
+                        </div>
+                        {% elif msg.user == user %}
+                        <div class="bg-gray-500 rounded px-3 pt-2 pb-1 text-white self-end text-sm mt-4" style="max-width: 60%;">
+                            <p class="text-sm">{{msg.text}}</p>
+                            <p class="text-gray-200 text-right mt-0.25" style="font-size: 10px;">{{ msg.time|date:'d/M/Y, f A'}}</p>
+                        </div>
+                        {% else %}
+                        <div class="flex mt-4" style="max-width: 60%;">
+                            <div class="rounded-full flex items-center justify-center text-xl h-8 w-8" style="background-color: bisque;">
+                                {{msg.user|user_logo}}
+                            </div>
+                            <div class="ml-2">
+                                <p class="text-xs font-medium self-start text-white ml-1">{{msg.user.account.name}}</p>
+                                <div class="bg-gray-800 rounded px-3 pt-2 pb-1 text-white self-start text-sm mt-1">
+                                    <p class="text-sm">{{msg.text}}</p>
+                                    <p class="text-gray-300 text-right mt-0.25" style="font-size: 10px;">{{ msg.time|date:'d/M/Y, f A'}}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+    
+                <!-- FOOTER  -->
+                <div class="flex w-full bg-gray-800 h-16 items-center justify-center px-5 sm:px-10 flex-shrink-0">
+                    <div class="flex bg-gray-500 rounded-full items-center" style="width: 500px;">
+                        <input type="text" id="chat-input" class="bg-transparent ml-5 my-2 flex-grow min-w-0" placeholder="Write something...">
+                        <img id="chat-send-button" src="/static/img/send.svg" class="h-6 w-6 object-contain cursor-pointer mr-4">
+                    </div>
+                </div>   
+    
             </div>
-        </div>        
-    </div>
+               
+   
+        </div>
+        
+        
+    {% for member in team.members.all %}
+        <input type="text" readonly hidden id="{{member.username}}-name" value="{{member.account.name}}">
+        <input type="text" readonly hidden id="{{member.username}}-img" value="{{member.account.logo_url}}">
+    {% endfor %}
+
+    <input type="text" readonly hidden id="room-name" value="{{team.room}}">
+    <input type="text" readonly hidden id="username" value="{{user.username}}">
+
+    <!-- CHAT MESSAGE TEMPLATES  -->
+    <template id="info-msg-tmp">
+        <div class="bg-gray-600 rounded px-3 py-1 text-white self-center mt-4">
+            <p class="text-center text-light" style="font-size: 10px;">
+                <span class="msg-time"></span>: <span class="msg-text"></span>
+            </p>
+        </div>
+    </template>
+
+    <template id="self-msg-tmp">
+        <div class="bg-gray-500 rounded px-3 pt-2 pb-1 text-white self-end text-sm mt-4" style="max-width: 60%;">
+            <p class="msg-text text-sm"></p>
+            <p class="msg-time text-gray-200 text-right mt-0.25" style="font-size: 10px;"></p>
+        </div>
+    </template>
+
+    <template id="other-msg-tmp">
+        <div class="flex mt-4" style="max-width: 60%;">
+            <div class="msg-logo rounded-full flex items-center justify-center text-xl h-8 w-8" style="background-color: bisque;"></div>
+            <div class="ml-2">
+                <p class="msg-author text-xs font-medium self-start text-white ml-1">{{msg.user.account.name}}</p>
+                <div class="bg-gray-800 rounded px-3 pt-2 pb-1 text-white self-start text-sm mt-1">
+                    <p class="msg-text text-sm">{{msg.text}}</p>
+                    <p class="msg-time text-gray-300 text-right mt-0.25" style="font-size: 10px;">{{ msg.time|date:'d/M/Y, f A'}}</p>
+                </div>
+            </div>
+        </div>
+    </template>
 {% endblock %}
 
 {%block scripts%}

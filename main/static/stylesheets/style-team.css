@@ -1,15 +1,28 @@
 .team-info{
-    right: -100vw;
+    left: -100vw;
 }
-.team-info-active{
-    right: 0;
+.team-info-active .team-info{
+    left: 0;
 }
+.team-info-active .main-wrp{
+    margin-left: 100vw;
+}
+
 
 @media (min-width: 768px){
     .team-info{
-        right: -320px;
+        left: -320px;
     }   
-    .team-info-active{
-        right: 0;
+    .team-info-active .team-info{
+        left: 0;
     }
+    .main-wrp{
+        margin-left: 160px;
+        margin-right: 160px;
+    }
+    .team-info-active .main-wrp{
+        margin-left: 320px;
+        margin-right: 0;
+    }
+    
 }

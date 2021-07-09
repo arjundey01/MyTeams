@@ -198,6 +198,7 @@ signalingChannel.onmessage = (msg)=>{
 
 signalingChannel.onerror = (err)=>{
     console.log("Signaling Channel Error: ",err);
+    alert('Could not connect to the chat server. Please reload the page to retry.');
 }
 
 
@@ -214,8 +215,10 @@ function handleLogin({success, username, name}){
     }
     else{
         $('.error-msg').addClass('hidden');
-        $('#login-error').text('Sorry! You cannot join this room.');
+        $('#login-error').text('Sorry! You are not authorized join this room.');
         $('#login-error').removeClass('hidden');
+        $('#join-button').off('click');
+        $('#join-button').css('opacity','0.5');
     }
 }
 
@@ -246,10 +249,10 @@ function handleAddPeer ({username, name, muted}){
     peers[username] = peer;
 }
 
-function handleMessage({username, text}){
+function handleMessage({username, text, name}){
     const temp = document.getElementById('chat-msg-temp');
     const p = temp.content.cloneNode(true);
-    $('.chat-author',p).text(username);
+    $('.chat-author',p).text(name);
     $('.chat-text',p).text(text);
     $('#chat-msg-wrp').append(p);
 }
@@ -289,7 +292,7 @@ function getMuteStatus(){
 $('#join-button').on('click', function(e){
     selfName = $('#username-input').val();
     if(selfName != ""){
-        signalingChannel.send(JSON.stringify({type:'login', name: selfName}));
+        signalingChannel.send(JSON.stringify({type:'login', name: selfName, video: true}));
     }
     else{
         $('.error-msg').addClass('hidden');
