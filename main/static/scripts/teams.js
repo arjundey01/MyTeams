@@ -33,3 +33,7 @@ $('.team-thumbnail').on('click',function(e){
     const name = $(this).attr('data-name');
     window.location = `/team/${name}/`;
 });
+
+$('#conv-toggle').on('click', function(e){
+    $('#conv-panel').toggleClass('-left-full');
+});

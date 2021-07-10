@@ -14,9 +14,10 @@ class Account(models.Model):
 class Team(models.Model):
     title = models.CharField(max_length=50)
     room = CharField(max_length=100)   
-    members = models.ManyToManyField(User, related_name='teams')
-    invited = models.ManyToManyField(User, related_name='invited_to')
+    members = models.ManyToManyField(User, related_name='teams', blank=True)
+    invited = models.ManyToManyField(User, related_name='invited_to', blank=True)
     logo = models.ImageField(upload_to='team-logos/', blank=True, null=True)
+    is_personal = models.BooleanField(default=False)
 
     @property
     def logo_url(self):

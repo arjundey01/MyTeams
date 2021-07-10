@@ -4,7 +4,7 @@ from main.forms import TeamForm
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth import logout, login
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, request
 from .auth_helper import get_sign_in_url, get_token_from_code, store_token, store_user, remove_user_and_token, get_token
 from .graph_helper import get_user
 from django.contrib.auth.models import User
@@ -14,7 +14,9 @@ import time, json
 
 def home(request):
     if request.user.is_authenticated:
-        return render(request, 'teams.html')
+        convs = request.user.teams.filter(is_personal=True)
+        teams = request.user.teams.filter(is_personal=False)
+        return render(request, 'teams.html', {'convs':convs,'teams':teams})
     else:
         return render(request, 'home.html')
 
@@ -26,7 +28,7 @@ def team(request, team_name):
     team = team.first()
     if request.user in team.members.all():
         chats = ChatMessage.objects.filter(team=team).order_by('time')
-        return render(request, 'team.html', context={'hide_header':True, 'team':team, 'chats':chats})
+        return render(request, 'team.html', context={'team':team, 'chats':chats})
     return HttpResponseForbidden()
 
 
@@ -83,12 +85,12 @@ def create_team(request):
 
 
 def search_user(request):
-    query = request.GET.get('query')
+    query = request.GET.get('query','').lower()
     res=[]
     for user in User.objects.all():
         if user!=request.user:
-            match = max(fuzz.partial_ratio(user.account.name, query),
-                         fuzz.partial_ratio(user.username, query))
+            match = max(fuzz.partial_ratio(user.account.name.lower(), query),
+                         fuzz.partial_ratio(user.username.lower(), query))
             if match>70:
                 entry={'username':user.username, 'name':user.account.name, 'match':match}
                 res.append(entry)
@@ -154,6 +156,7 @@ def decline_invite(request):
         return HttpResponse('success',status=200)
 
     return HttpResponseBadRequest()
+
         
 def leave_team(request):
     if not request.user.is_authenticated:
@@ -169,6 +172,7 @@ def leave_team(request):
 
     return HttpResponseBadRequest()
 
+
 def seen_notif(request):
     if not request.user.is_authenticated:
         return HttpResponse('Unauthorized', status=401)
@@ -177,3 +181,23 @@ def seen_notif(request):
         request.user.account.save()
         return HttpResponse('success',status=200)
     return HttpResponseBadRequest()
+
+@login_required
+def user_chat(request, username):
+    if username == request.user.username:
+        redirect('/')
+    user = get_object_or_404(User, username=username)
+    team = None
+    for tm in user.teams.all():
+        if tm.member_count == 2 and request.user in tm.members.all():
+            team = tm
+            break
+    if not team:
+        team = Team()
+        team.title = 'personal-{0}-{1}'.format(user.username, request.user.username)
+        team.room = 'personal-{0}-{1}'.format(user.username, request.user.username)
+        team.is_personal=True
+        team.save()
+        team.members.add(user, request.user)
+    chats = ChatMessage.objects.filter(team=team).order_by('time')
+    return render(request, 'user-chat.html', context={'team':team, 'chats':chats, 'other':user})

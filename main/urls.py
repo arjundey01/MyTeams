@@ -15,4 +15,5 @@ urlpatterns = [
     path('decline-invite/',views.decline_invite, name='decline-invite'),
     path('leave-team/',views.leave_team, name='leave-team'),
     path('seen-notif/',views.seen_notif, name='seen-notif'),
+    path('chat/u/<username>/', views.user_chat, name='user-chat'),
 ]

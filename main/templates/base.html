@@ -10,52 +10,12 @@
     <link rel="stylesheet" href="/static/stylesheets/style-base.css">
     {% block style %}{% endblock %}
 </head>
-<body class="bg-gray-900 {% if not hide_header %}pt-20{% endif %}">
-    {% if not hide_header %}
-    <div class="header flex items-center justify-between px-5 py-5 fixed top-0 w-full bg-gray-900">
-        <div class="flex items-center">
-            <img src="/static/img/logo.svg" class="h-10" alt="">
-            <p class="text-3xl text-white font-medium ml-4">MyTeams</p>
-        </div>
-        {% if not user.is_authenticated %}
-        <a href="https://microsoft.acehacker.com/engage2021/" class="hidden sm:flex text-white text-lg cursor-pointer items-center">
-            <img src="/static/img/microsoft-logo.svg" class="h-8 w-8 mr-3">
-            Engage 2021
-        </a>
-        {% else %}
-        <div class="flex items-center cursor-pointer overflow-visible relative">
-            <div>
-                <div class="relative mr-5">
-                    <img id="notif-btn" src="/static/img/notif.svg" class="h-7 w-7">
-                    
-                    <div id="new-notif-ind" class="bg-red-400 absolute top-1 right-0 rounded-full h-2 w-2 {% if not user.account.new_notif %}hidden{% endif %}"></div>
-                    
-                </div>
-                <div id="notifs" class="absolute w-screen -ml-4 sm:w-96 sm:ml-0 bg-gray-600 shadow-lg top-12 -right-5 sm:right-0 px-4 pb-2 sm:rounded h-screen sm:h-auto hidden">      
-                    <p class="text-lg text-white my-3">Notifications</p>
-                    {% for team in user.invited_to.all %}
-                    <div class="flex items-center py-2 border-b-2 border-gray-500 text-white">
-                        <p class="flex-grow text-sm">You have been invited to join <b>{{team.title}}</b>!</p>
-                        <img data-team-id="{{team.id}}" src="/static/img/tick.svg" title="Accept" class="accept-invite h-5 w-5 mx-2 cursor-pointer" data-name="{{team.title}}">
-                        <img data-team-id="{{team.id}}" src="/static/img/close.svg" title="Decline" class="decline-invite h-5 w-5 mx-2 cursor-pointer">
-                    </div>
-                    {% empty %}
-                    <div class="text-white text-center py-2">Nothing here :\</div>
-                    {% endfor %}
-                </div>
-            </div>
-            <div id="header-profile" class="rounded-full flex items-center justify-center text-2xl h-10 w-10" style="background-color: bisque;">
-                {{user|user_logo}}
-            </div>
-            <p class="text-white ml-3 hidden sm:block">{{user.account.name}}</p>
-            <div id="header-profile-options" class="absolute top-12 right-0 bg-gray-800 text-white p-1 w-28 rounded hidden">
-                <a href="{% url 'signout' %}"><p class="hover:bg-gray-700 p-1 w-full" >Sign Out</p></a>
-            </div>
-        </div>
-        {% endif %}
-    </div>
-    {% endif %}
-    {% block content %}
+
+<body class="bg-gray-900">
+    {% block content%}
+    
+
+
     {%endblock%}
 
     <div id="overlay" class="flex w-screen h-screen sm:items-center justify-center fixed top-0 left-0 hidden">
@@ -66,7 +26,19 @@
     <input type="text" id="csrf-token" readonly hidden value="{{csrf_token}}">
     <input type="text" readonly hidden id="username" value="{{user.username}}">
 </body>
-<script src="/static/scripts/base.js"></script>
+
+<script>
+    //For getting coorect viewpoert height in mobile browsers
+    let vh = window.innerHeight;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+
+    window.addEventListener('resize', () => {
+        let vh = window.innerHeight;
+        document.documentElement.style.setProperty('--vh', `${vh}px`);
+    });
+</script>
+
 {% block scripts %}
 {%endblock%}
+
 </html>
