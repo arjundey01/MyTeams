@@ -6,7 +6,7 @@
     transform: rotateY(180deg);
     -webkit-transform:rotateY(180deg); 
     -moz-transform:rotateY(180deg); 
-    object-fit: cover;
+    object-fit: contain;
 }
 
 #lobby-video-wrp{
@@ -15,7 +15,7 @@
 }
 
 .remote-video{
-    object-fit: cover;
+    object-fit: contain;
 }
 
 video::-webkit-media-controls-enclosure {
@@ -59,7 +59,7 @@ video::-webkit-media-controls-enclosure {
 
 .ele{
     min-width: 150px;
-    flex:1
+    flex:1;
 }
 
 @media (min-width: 768px){

@@ -17,9 +17,9 @@
         </div>
     </div>
     
-    <div class="flex items-center cursor-pointer overflow-visible relative flex-shrink-0">
+    <div class="flex items-center overflow-visible relative flex-shrink-0">
         <div>
-            <div class="relative mr-5">
+            <div class="relative mr-5  cursor-pointer">
                 <img id="notif-btn" src="/static/img/notif.svg" class="h-7 w-7">
                 
                 <div id="new-notif-ind" class="bg-red-400 absolute top-1 right-0 rounded-full h-2 w-2 {% if not user.account.new_notif %}hidden{% endif %}"></div>
@@ -38,7 +38,7 @@
                 {% endfor %}
             </div>
         </div>
-        <div id="header-profile" class="rounded-full flex items-center justify-center text-2xl h-10 w-10" style="background-color: bisque;">
+        <div id="header-profile" class="rounded-full flex items-center justify-center text-2xl h-10 w-10 cursor-pointer" style="background-color: bisque;">
             {{user|user_logo}}
         </div>
         <p class="text-white ml-3 hidden sm:block">{{user.account.name}}</p>

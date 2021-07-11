@@ -1,0 +1,7 @@
+Hello there!
+    You have been invited to join the team {title}}. Check your notifications or click the follwoing link to join:
+{{link}}
+
+Regards,
+MyTeams
+myteams.ms@gmail.com

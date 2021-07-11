@@ -7,141 +7,11 @@ let loggedIn = false;
 const RTCPeerConfig = {iceServers:[{urls:"stun:stun.l.google.com:19302"}, {urls:"stun:stun.services.mozilla.com"}]};
 
 const peers={};
-const videoDeviceConstraints = {
-    video:true,
-    audio:true
-}
+const deviceConstraints = {video: {height:720, width:1280}, audio: true};
 const muted = {video: false, audio:false};
 
 let localVideoStream;
 let screenStream;
-
-function Peer(peer_username, peer_name, was_requested=false, muted_status={audio:false, video:false}){
-    this.username = peer_username;
-    this.name = peer_name
-    this.remoteVideo = null;
-    this.peerConn = null;
-    this.muted = muted_status;
-    
-    this.createVideo();
-    
-    this.initConn();
-    
-    if(was_requested)
-        signalingChannel.send(JSON.stringify({type:"ready", target:this.username, muted:getMuteStatus()}));
-    else
-        signalingChannel.send(JSON.stringify({type:"add-peer", target:this.username, muted:getMuteStatus()}));
-
-}
-
-Peer.prototype.createVideo = function(){
-    let temp = document.getElementById("remote-video-temp");
-    let remoteVideoEle = temp.content.cloneNode(true);
-    $("video", remoteVideoEle).attr('id',`remote-video-${this.username}`);
-    $(".video-name", remoteVideoEle).text(this.name);
-    $(".video-logo", remoteVideoEle).text(this.name[0].toUpperCase());
-    appendVideoElement(remoteVideoEle);
-    $(`#remote-video-${this.username}`).parent().on('click', focusVideo);
-
-    this.remoteVideo = document.getElementById(`remote-video-${this.username}`);
-    this.remoteStream = new MediaStream();
-    this.remoteVideo.srcObject = this.remoteStream;
-
-    this.handleMute({kind:'audio',muted: this.muted.audio});
-    this.handleMute({kind:'video',muted: this.muted.video});
-}
-
-Peer.prototype.initConn = function(){
-    if(this.peerConn!=null){
-        this.peerConn.close();
-        delete this.peerConn;
-    }
-
-    this.peerConn = new RTCPeerConnection(RTCPeerConfig);
-
-    localVideoStream.getTracks().forEach(track=>{
-        this.peerConn.addTrack(track, localVideoStream);
-    })
-
-    this.peerConn.ontrack= async ({track})=>{
-        this.remoteStream.addTrack(track, this.remoteStream);
-        $(this.remoteVideo).parent().removeClass('hidden');
-    }
-
-    this.peerConn.onicecandidate = (e)=>{
-        console.log('ICECANDIDATE',e.candidate);
-        if(e.candidate){
-            signalingChannel.send(JSON.stringify({type:"candidate",candidate: e.candidate, target:this.username}));
-        }
-    }
-}
-
-Peer.prototype.handleOffer = function({offer, username}){
-    this.peerConn.setRemoteDescription(new RTCSessionDescription(offer));
-    this.peerConn.createAnswer((answer)=>{
-        this.peerConn.setLocalDescription(answer);
-        signalingChannel.send(JSON.stringify(
-            {type:'answer', answer:answer, target:username}
-        ));
-    }, function(e){
-        console.log("Could not create answer: ", e);
-    });
-}
-
-Peer.prototype.handleAnswer = function({answer}){
-    this.peerConn.setRemoteDescription(new RTCSessionDescription(answer));
-}
-
-Peer.prototype.handleReady = function({muted}){
-    this.handleMute({kind:'audio',muted: muted.audio});
-    this.handleMute({kind:'video',muted: muted.video});
-    this.call();
-}
-
-Peer.prototype.handleCandidate = async function({candidate}){
-    if(candidate)
-        await this.peerConn.addIceCandidate(new RTCIceCandidate(candidate));
-}
-
-Peer.prototype.handleMute = function({kind, muted}){
-    this.muted[kind]=muted;
-    if(kind=='video'){
-        if(muted){
-            $('.video-off', this.remoteVideo.parentElement).removeClass('hidden');
-            $(this.remoteVideo).addClass('hidden');
-        }else{
-            $('.video-off', this.remoteVideo.parentElement).addClass('hidden');
-            $(this.remoteVideo).removeClass('hidden');
-        }
-    }
-    else{
-        if(muted)
-            $('.video-muted', this.remoteVideo.parentElement).removeClass('hidden');
-        else
-            $('.video-muted', this.remoteVideo.parentElement).addClass('hidden');
-    }
-}
-
-Peer.prototype.call = function(){
-    this.peerConn.createOffer((offer)=>{
-        signalingChannel.send(JSON.stringify(
-            {type:'offer', offer:offer, target:this.username}
-        ));
-        this.peerConn.setLocalDescription(offer);
-    },function(e){
-        console.log("Could not create offer: ",e);
-    })
-}
-
-Peer.prototype.handleLeave = function(){
-    // this.peerConn.onaddstream = ()=>{};
-    // this.peerConn.onicecandidate = ()=>{};
-    this.peerConn.close();
-    delete this.peerConn;
-    delete this.remoteStream;
-    $(this.remoteVideo).parent().remove();
-    updateVideoContainerLayout();
-}
 
 const signalingChannel = new WebSocket(
     'wss://'
@@ -158,8 +28,8 @@ signalingChannel.onopen = ()=>{
 }
 
 signalingChannel.onmessage = (msg)=>{
-    console.log("Message:",msg.data);
     const data = JSON.parse(msg.data);
+    console.log("Message:", data.type ,data);
     switch(data.type){
         case 'login':
             handleLogin(data.payload);
@@ -201,6 +71,25 @@ signalingChannel.onerror = (err)=>{
     alert('Could not connect to the chat server. Please reload the page to retry.');
 }
 
+function init(){
+    navigator.mediaDevices
+    .getUserMedia(deviceConstraints)
+    .then((stream)=>{
+        localVideo.srcObject = stream;
+        $('#lobby-video')[0].srcObject = stream;
+        localVideo.muted = true;
+        $('#lobby-video')[0].muted = true;
+        $('#lobby-video-loading').hide();
+        localVideoStream = stream;
+    }).catch((e)=>{
+        $('#lobby-video-loading').hide();
+        $('#lobby-camera-access-err').removeClass('hidden');
+        $('#join-button').off('click');
+        $('#join-button').removeClass('cursor-pointer');
+        $('#join-button').css('opacity','0.5');
+        console.log(e);
+    });
+}
 
 function handleLogin({success, username, name}){
     console.log(username," logging in...");
@@ -209,7 +98,7 @@ function handleLogin({success, username, name}){
         selfName = name;
         $('#lobby').addClass('hidden');
         $('#chat-room').removeClass('hidden');
-        $('#local-video-wrp .video-name').text(selfName);
+        $('#local-video-wrp .video-name').text(selfName+' (You)');
         $('#local-video-wrp .video-logo').text(selfName[0].toUpperCase());
         loggedIn = true;
     }
@@ -228,10 +117,10 @@ function handleJoin({username, name}){
         if(peers[username]){
             peers[username].createVideo();
             peers[username].initConn();
-            signalingChannel.send(JSON.stringify({type:"add-peer", target:username, muted:getMuteStatus()}));
+            signalingChannel.send(JSON.stringify({type:"add-peer", target:username, muted:peers[username].getLocalMuteStatus()}));
             return;
         }
-        const peer = new Peer(username, name);
+        const peer = new Peer(username, name, localVideoStream, signalingChannel);
         peers[username] = peer;
     }
 }
@@ -242,10 +131,10 @@ function handleAddPeer ({username, name, muted}){
     if(peers[username]){
         peers[username].createVideo();
         peers[username].initConn();
-        signalingChannel.send(JSON.stringify({type:"ready", target:username, muted:getMuteStatus()}));
+        signalingChannel.send(JSON.stringify({type:"ready", target:username, muted:peers[username].getLocalMuteStatus()}));
         return;
     }
-    const peer = new Peer(username, name ,true, muted);
+    const peer = new Peer(username, name ,localVideoStream, signalingChannel, true, muted);
     peers[username] = peer;
 }
 
@@ -261,39 +150,16 @@ function handleMessage({username, text, name}){
     };
 }
 
-function init(){
-    navigator.mediaDevices.getUserMedia(videoDeviceConstraints).then((stream)=>{
-        localVideo.srcObject = stream;
-        $('#lobby-video')[0].srcObject = stream;
-        localVideo.muted = true;
-        $('#lobby-video')[0].muted = true;
-        $('#lobby-video-loading').hide();
-        localVideoStream = stream;
-    }).catch((e)=>{
-        $('#lobby-video-loading').hide();
-        $('#lobby-camera-access-err').removeClass('hidden');
-        $('#join-button').off('click');
-        $('#join-button').removeClass('cursor-pointer');
-        $('#join-button').css('opacity','0.5');
-        console.log(e);
-    });
-}
-
-function getMuteStatus(){
-    muteStatus={};
-    localVideoStream.getTracks().forEach(track=>{
-        muteStatus[track.kind]=!track.enabled;
-    })
-    return muteStatus;
-}
-// $('#add-button').on('click', function(e){
-//     let temp = document.getElementById("remote-video-temp");
-//     let remoteVideoEle = temp.content.cloneNode(true);
-//     $('video',remoteVideoEle)[0].srcObject = localVideoStream;
-//     appendVideoElement(remoteVideoEle);
-// });
-
 $('#join-button').on('click', function(e){
+    login();
+});
+
+$('#username-input').on('keypress', function(e){
+    if(e.keyCode == 13)
+        login();
+});
+
+function login(){
     selfName = $('#username-input').val();
     if(selfName != ""){
         signalingChannel.send(JSON.stringify({type:'login', name: selfName, video: true}));
@@ -302,7 +168,7 @@ $('#join-button').on('click', function(e){
         $('.error-msg').addClass('hidden');
         $("#empty-error").removeClass('hidden');
     }
-})
+}
 
 $('#chat-input').on('keypress', function(e){
     if(e.keyCode == 13 && $(this).val()!=""){
@@ -321,12 +187,36 @@ $('.mute-button').on('click', function(e){
         return;
 
     muted[kind]=!muted[kind];
-
-    localVideoStream.getTracks().forEach(track=>{
-        if(track.kind == kind)
-            track.enabled = !muted[kind];
-    })
-
+    if(muted[kind]){
+        localVideoStream.getTracks().forEach(track=>{
+            if(track.kind == kind){
+                localVideoStream.removeTrack(track);               
+                track.stop();
+            }
+        })
+    }else{
+        const config = {}
+        config[kind]=deviceConstraints[kind];
+        navigator.mediaDevices.getUserMedia(config).then((stream)=>{
+            localVideoStream.addTrack(stream.getTracks()[0]);
+            for(const peer in peers ){
+                if(!peers[peer])continue;
+                if(!peers[peer].peerConn)continue;
+                const senders = peers[peer].peerConn.getSenders();
+                console.log(senders);
+                var sender = senders.find(function(s) {
+                    if(!s.track)return false;
+                    return s.track.kind == kind;
+                });
+                if(sender){
+                    sender.replaceTrack(stream.getTracks()[0]);
+                }else{
+                    console.log(peers[peer].peerConn.addTrack(stream.getTracks()[0]));
+                    peers[peer].call();
+                }
+            };
+        });
+    }
     $(`.mute-button[data-kind="${kind}"]`).toggleClass('mute-button-active');
 
     if(kind=='audio'){
@@ -350,6 +240,9 @@ $('.mute-button').on('click', function(e){
 
 $('#hangup-button').on('click', function(e){
     signalingChannel.close();
+    localVideoStream.getTracks().forEach(track=>{
+        track.stop();
+    })
     $("#chat-room").addClass('hidden');
     $("#thankyou-screen").removeClass('hidden');
 })
@@ -383,7 +276,7 @@ async function onStartScreenShare(){
     }catch(e){    
         console.log('Error: Could not capture screen.',e.name);
         if(e.name=="NotAllowedError")
-            alert('Sorry, screen sharing is not supported for this device.')
+            alert('Sorry, the application does not have permission to access display media.')
         else
             alert('Sorry, some error occured :(');
     }
@@ -405,21 +298,3 @@ function onStopScreenShare(){
     $('#screen-share').attr('data-state','off');
     $('#screen-share').toggleClass('screen-share-active');
 }
-
-$('.video-ele').on('click', focusVideo);
-
-function focusVideo(e){
-    if(window.innerWidth > 640)
-        return;
-    e.preventDefault();
-
-    if($('#focused-video>div').length){
-        $('#video-wrapper')[0].appendChild($('#focused-video>div')[0]);
-    }
-    $('#focused-video').html("");
-    $('#focused-video')[0].appendChild(this);
-}
-
-$('.back-button').on('click',function(){
-    window.history.back();
-})

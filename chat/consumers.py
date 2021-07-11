@@ -10,6 +10,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.room_name=self.scope['url_route']['kwargs']['room_name']
         self.room_group_name='chat_%s'%self.room_name
         self.is_video=False
+        self.username=None
+        self.team=None
         await self.channel_layer.group_add(
             self.room_group_name,
             self.channel_name
@@ -17,7 +19,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.accept()
     
     async def disconnect(self, code):
-        if self.is_video and hasattr(self, 'username'):
+        if self.is_video and self.username:
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
@@ -26,7 +28,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     'name': self.name
                 }
             )
-            if hasattr(self, 'team'):
+            if self.team:
                 await self.save_message(self.scope['user'].account.name + ' left the video chat.','L')
         await self.channel_layer.group_discard(
             self.room_group_name,
@@ -68,7 +70,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             'name': name
                         }
                     )
-                    if hasattr(self,'team'):
+                    if self.team:
                         await self.save_message(self.scope['user'].account.name + ' joined the video chat.','J')
 
         elif data['type']=="offer":
@@ -139,7 +141,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             )
     
     async def chat_join(self, event):
-        if event['username'] != self.username:
+        if event['username'] != self.username and self.username:
             await self.send(text_data=json.dumps({'type':'join', 'payload':{'username':event['username'], 'name':event['name']}}))
 
 
@@ -181,11 +183,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 'muted': event['muted']}}))
 
     async def chat_leave(self, event):
-        if event['username'] != self.username:
+        if event['username'] != self.username and self.username:
             await self.send(text_data=json.dumps({'type':'leave','payload':{'username':event['username']}}))
 
     async def chat_mute(self, event):
-        if event['username']!=self.username:
+        if event['username']!=self.username and self.username:
             await self.send(text_data=json.dumps({'type':'mute','payload':{
                 'username':event['username'], 
                 'kind':event['kind'], 
@@ -210,7 +212,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def save_message(self, text, type = 'T'):
-        if hasattr(self,'team') and self.scope['user'].is_authenticated and len(text):
+        if self.team and self.scope['user'].is_authenticated and len(text):
             chat = ChatMessage()
             chat.user = self.scope['user']
             chat.team = self.team

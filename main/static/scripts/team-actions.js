@@ -56,6 +56,7 @@
                     const temp = $('#search-res-tmp')[0];
                     const p = temp.content.cloneNode(true);
                     $('.res-name', p).text(res.name);
+                    $('.res-username', p).text(res.username);
                     $('.res-logo', p).text(res.name[0].toUpperCase());
                     $('.res-invite', p).attr('data-username',res.username);
                     $('.res-invite',p).on('click',invite);

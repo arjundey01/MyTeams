@@ -6,11 +6,42 @@ $('.chat-toggle').on('click', function(e){
     };
 })
 
+//For getting coorect viewpoert height in mobile browsers
+let vh = window.innerHeight;
+document.documentElement.style.setProperty('--vh', `${vh}px`);
+
+window.addEventListener('resize', () => {
+    let vh = window.innerHeight;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+});
 
 $('#invite-people').on('click', function(e){
     navigator.clipboard.writeText(window.location.href)
     .then(()=>{alert('Invite link copied!');})
     .catch(()=>{alert('Could not copy invite link :(')});
+})
+
+$('.video-ele').on('click', focusVideo);
+
+function focusVideo(e){
+    e.preventDefault();
+    if(window.innerWidth > 640){
+        e.target.requestFullscreen();
+        return;
+    }
+    if($('#focused-video>div').length){
+        $('#video-wrapper')[0].appendChild($('#focused-video>div')[0]);
+    }
+    $('#focused-video').html("");
+    $('#focused-video')[0].appendChild(this);
+}
+
+$('.back-button').on('click',function(){
+    window.history.back();
+})
+
+$('#focused-video').on('click', function(){
+    this.requestFullscreen();
 })
 
 const videosContainer = $('#video-wrapper')[0];
@@ -49,5 +80,3 @@ function updateVideoContainerLayout(){
         $('.ele').css('min-height', '220px')
     }
 }
-
-$('#video-wrapper').on('')

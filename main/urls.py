@@ -12,6 +12,7 @@ urlpatterns = [
     
     path('invite/',views.invite, name='invite'),
     path('accept-invite/',views.accept_invite, name='accept-invite'),
+    path('accept-invite/<token>/',views.accept_email_invite, name='accept-email-invite'),
     path('decline-invite/',views.decline_invite, name='decline-invite'),
     path('leave-team/',views.leave_team, name='leave-team'),
     path('seen-notif/',views.seen_notif, name='seen-notif'),

@@ -9,7 +9,10 @@ from .auth_helper import get_sign_in_url, get_token_from_code, store_token, stor
 from .graph_helper import get_user
 from django.contrib.auth.models import User
 from .models import Account, Team
+from .mail import send_invitation_mail
 from fuzzywuzzy import fuzz
+from cryptography.fernet import Fernet
+from django.conf import settings
 import time, json
 
 def home(request):
@@ -33,6 +36,8 @@ def team(request, team_name):
 
 
 def sign_in(request):
+    if request.user.is_authenticated:
+        return redirect('/')
     sign_in_url, state = get_sign_in_url()
     request.session['auth_state'] = state
     return HttpResponseRedirect(sign_in_url)
@@ -117,6 +122,11 @@ def invite(request):
         user.account.new_notif=True
         user.account.save()
 
+        try:
+            send_invitation_mail(user,team)
+        except:
+            pass
+
         return HttpResponse('success',status=200)
 
     return HttpResponseBadRequest()
@@ -139,6 +149,31 @@ def accept_invite(request):
         return HttpResponse('success',status=200)
 
     return HttpResponseBadRequest()
+
+
+def accept_email_invite(request,token):
+    fernet = Fernet(settings.EMAIL_ENCRYPTION_KEY)
+    username, room = fernet.decrypt(token.encode()).decode().split('@')
+    
+    team = get_object_or_404(Team, room=room)
+    user = get_object_or_404(User, username=username)
+
+    if request.user.is_authenticated and user!=request.user:
+        return HttpResponseForbidden()
+    if user in team.members.all():
+        return redirect('team',team_name=team.title)
+    if user not in team.invited.all():
+        return HttpResponseForbidden()
+
+    if len(user.invited_to.all()) == 1:
+        user.account.new_notif=False
+        user.account.save()
+    
+    team.invited.remove(user)
+    team.members.add(user)
+
+    return redirect('/signin/')
+
 
 
 def decline_invite(request):
