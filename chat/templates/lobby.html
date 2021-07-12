@@ -1,10 +1,14 @@
 <div id="lobby" class="flex flex-col items-center justify-center h-fullscreen w-screen bg-gray-900">
+    <!-- PREVIEW VIDEO -->
     <div id="lobby-video-wrp" class="rounded overflow-hidden relative mx-10">
+
         <img id="lobby-video-loading" src="/static/img/loading.gif" alt="" class="w-full h-full object-cover">
+
         <div id="lobby-camera-access-err" class="bg-gray-700 w-full h-full flex items-center justify-center flex-col hidden">
             <p class="text-xl mx-5 text-white text-center">Cannot Access Camera :(</p>
             <p class="text-sm mx-5 text-gray-200 text-center">Tip: Try reloading or check if the site has been blocked of camera access permission.</p>
         </div>
+
         <video id="lobby-video" class="h-full w-full object-cover" autoplay playsinline></video>
        
         <div class="video-off border-2 border-solid border-black h-full w-full flex items-center justify-center hidden bg-gray-800">
@@ -25,6 +29,7 @@
         </div>
     </div>
     
+    <!-- DISPLAY NAME -->
     {% if user.is_authenticated %}
     <p class="text-white text-lg mt-6">Welcome {{user.account.name}}!</p>
     <input type="text" id="username-input" value="{{user.username}}" readonly class="hidden">
@@ -35,6 +40,8 @@
     {% endif %}
     <p id="login-error" class="error-msg text-red-400 text-xs text-center mt-1 hidden"></p>
     <p id="empty-error" class="error-msg text-red-400 text-xs text-center mt-1 hidden">Please enter a display name.</p>
+    
+    <!-- JOIN BUTTON -->
     <div class="flex flex-col items-center justify-center w-76 mt-3">
         <p class="text-white text-xl">Ready?</p>
         <div id="join-button" class="rounded-full px-7 py-1 my-3 bg-blue-500 text-white text-lg cursor-pointer">Join</div>

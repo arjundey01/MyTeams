@@ -5,8 +5,12 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {% block head %}{% endblock %}
+
+    <!-- TAILWIND CSS FRAMEWORK CDN -->
     <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+    <!-- JQUERY JS LIBRARY CDN -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
     <link rel="stylesheet" href="/static/stylesheets/style-base.css">
     {% block style %}{% endblock %}
 </head>
@@ -23,6 +27,7 @@
         {% endblock %}
     </div>
 
+    <!-- CSRF Token and Username for accessing through JavaScript -->
     <input type="text" id="csrf-token" readonly hidden value="{{csrf_token}}">
     <input type="text" readonly hidden id="username" value="{{user.username}}">
 </body>

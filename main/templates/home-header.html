@@ -1,11 +1,14 @@
 {% load extra_tags %}
+<!-- HOME PAGE HEADER -->
 <div class="header flex items-center justify-between px-5 py-5 fixed top-0 w-full bg-gray-900 z-50">
 
+    <!-- LOGO -->
     <div class="hidden sm:flex items-center">
         <img src="/static/img/logo.svg" class="h-10" alt="">
         <p class="hidden md:block text-3xl text-white font-medium ml-4">MyTeams</p>
     </div>
-        
+    
+    <!-- SEARCH BAR -->
     <div class="flex-grow mx-2 relative max-w-lg ml-20">
         <div class="flex items-center px-4 rounded-full py-2 bg-gray-800">
             <input type="text" id="user-search-input" class="bg-transparent flex-grow w-0 text-gray-400" autocomplete="off" placeholder="Search user..." data-state="idle">
@@ -13,18 +16,20 @@
         </div>
         <div id="search-res-wrp" class="absolute w-screen sm:w-full -ml-7 sm:ml-0 bg-gray-600 shadow-lg top-12 sm:right-0 px-4 pb-2 sm:rounded h-96 hidden overflow-y-scroll">      
             <p id="search-res-msg" class="mt-5 text-gray-300 text-center text-lg"></p>
-
+            <!-- Search results here -->
         </div>
     </div>
     
+
     <div class="flex items-center overflow-visible relative flex-shrink-0">
         <div>
+            <!-- NOTIF BUTTON -->
             <div class="relative mr-5  cursor-pointer">
                 <img id="notif-btn" src="/static/img/notif.svg" class="h-7 w-7">
-                
                 <div id="new-notif-ind" class="bg-red-400 absolute top-1 right-0 rounded-full h-2 w-2 {% if not user.account.new_notif %}hidden{% endif %}"></div>
-                
             </div>
+
+            <!-- NOTIFICATIONS PANEL -->
             <div id="notifs" class="absolute w-screen -ml-4 sm:w-96 sm:ml-0 bg-gray-600 shadow-lg top-12 -right-5 sm:right-0 px-4 pb-2 sm:rounded h-screen sm:h-auto hidden">      
                 <p class="text-lg text-white my-3">Notifications</p>
                 {% for team in user.invited_to.all %}
@@ -37,7 +42,10 @@
                 <div class="text-white text-center py-2">Nothing here :\</div>
                 {% endfor %}
             </div>
+
         </div>
+
+        <!-- PROFILE -->
         <div id="header-profile" class="rounded-full flex items-center justify-center text-2xl h-10 w-10 cursor-pointer" style="background-color: bisque;">
             {{user|user_logo}}
         </div>
@@ -45,9 +53,12 @@
         <div id="header-profile-options" class="absolute top-12 right-0 bg-gray-800 text-white p-1 w-28 rounded hidden">
             <a href="{% url 'signout' %}"><p class="hover:bg-gray-700 p-1 w-full" >Sign Out</p></a>
         </div>
+
     </div>
 </div>
 
+
+<!-- SEARCH RESULT ELEMENT TEMPLATE -->
 <template id="search-res-tmp">
     <div class="search-res w-full flex items-center justify-between border-b-2 border-gray-500 py-2 px-4">
         <div class="flex items-center">

@@ -4,6 +4,9 @@ from cryptography.fernet import Fernet
 from django.conf import settings
 from django.template.loader import render_to_string
 
+# Create and send a Team invitation link to the user's email
+# The invite token is created by symmetric encryption of the username and the teams room id
+# which guarantees an unique token for the invite
 def send_invitation_mail(user,team):
     fernet = Fernet(settings.EMAIL_ENCRYPTION_KEY)
     enc_msg = '{0}@{1}'.format(user.username, team.room)

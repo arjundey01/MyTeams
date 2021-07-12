@@ -5,7 +5,18 @@ from django.contrib.auth.models import User
 from main.models import Team
 import json, time
 
+# A consumer object represents a single websocket connection to a client
+# A consumer object can communicate with othe consumer objects by using groups,
+# which are handled by Channels using redis backend. A consumer can send a message 
+# to its own client or broadcast a message to all the consumers in its group, which then
+# may forward it appropriately to their clients.
+
+# The ChatConsumer is a class inheriting the Consumer(AsyncWebsocketConsumer, to be exact) class
+# and provides required additional functionalities as a Signalling Channel
+# for the front-end chat applications.
 class ChatConsumer(AsyncWebsocketConsumer):
+    # Initialize properties and add the consumer's channel to the 
+    # group of its room name when the client connects
     async def connect(self):
         self.room_name=self.scope['url_route']['kwargs']['room_name']
         self.room_group_name='chat_%s'%self.room_name
@@ -18,6 +29,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         )
         await self.accept()
     
+    # Send the leave signal to the group members, save the leave message
+    # and remove the channel from the group when client disconnects
     async def disconnect(self, code):
         if self.is_video and self.username:
             await self.channel_layer.group_send(
@@ -35,6 +48,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.channel_name
         )
 
+    # Respond or broadcast appropriate message, when a message is recieved from the client
+    # See the message type list at the bottom for details
     async def receive(self, text_data):
         print('recieved', text_data)
         data=json.loads(text_data)
@@ -140,6 +155,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 }
             )
     
+
+    # The below functions (with prefix chat_) are handlers for group broadcasts
+    # that is, when a consumer sends a message to the group with type being same as the handler function name
+    # See the message type list at the bottom of the page for details.
+
     async def chat_join(self, event):
         if event['username'] != self.username and self.username:
             await self.send(text_data=json.dumps({'type':'join', 'payload':{'username':event['username'], 'name':event['name']}}))
@@ -193,6 +213,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 'kind':event['kind'], 
                 'muted':event['muted']}}))
 
+
+    #Check if the user trying to join is authorized to join the room
+    #if so return success, username and the display name of the user
     @database_sync_to_async
     def login_user(self, name):
         try:
@@ -210,6 +233,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 username = username + '_' + str(int(time.time()))
                 return [True,username,name]
 
+    # Save the recieved chat message into the database
     @database_sync_to_async
     def save_message(self, text, type = 'T'):
         if self.team and self.scope['user'].is_authenticated and len(text):
@@ -219,4 +243,34 @@ class ChatConsumer(AsyncWebsocketConsumer):
             chat.type = type
             chat.text = text
             chat.save()
-    
+
+
+   
+# Message Types and corresponding actions:
+
+# message:  A simple text message. 
+#           The message is saved into the database.
+#           Broadcasted to the group and forwarded to every client
+
+# login:    A request sent by client to authorize it to join the room.
+#           Request is authenticated and username and display name is obtained
+#           Response is sent back to the client.
+#           Broadcasted to the group and a join message is sent to the clients (except the sender)
+
+# offer:    A SDP offer for RTC connection establishment.
+#           Broadcasted to the group and forwarded to the targeted client
+
+# answer:   A SDP answer to an SDP offer for RTC connection establishment.
+#           Broadcasted to the group and forwarded to the targeted client
+
+# candidate:A ICE Candidate for RTC connection establishment.
+#           Broadcasted to the group and forwarded to the targeted client
+
+# add-peer: A request for the newly joined peer from a peer already in the room to set up for an RTC connection with it.
+#           Broadcasted to the group and forwarded to the targeted client.
+
+# ready:    A response to the add-peer message indicatint the peer is ready to be called by the add-peer sender
+#           Broadcasted to the group and forwarded to the targeted client
+
+# mute:     A message signalling the sender has changed the mute state of a media stream
+#           Broadcasted to the group and forwarded to every client (except the sender)

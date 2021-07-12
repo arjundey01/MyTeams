@@ -1,11 +1,11 @@
 from chat.models import ChatMessage
-from django.http.response import Http404, HttpResponseBadRequest, HttpResponseForbidden
+from django.http.response import HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound
 from main.forms import TeamForm
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth import logout, login
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseRedirect, HttpResponse, request
-from .auth_helper import get_sign_in_url, get_token_from_code, store_token, store_user, remove_user_and_token, get_token
+from django.http import HttpResponseRedirect, HttpResponse
+from .auth_helper import get_sign_in_url, get_token_from_code, store_token, remove_user_and_token
 from .graph_helper import get_user
 from django.contrib.auth.models import User
 from .models import Account, Team
@@ -15,6 +15,7 @@ from cryptography.fernet import Fernet
 from django.conf import settings
 import time, json
 
+# Return the appropriate home page
 def home(request):
     if request.user.is_authenticated:
         convs = request.user.teams.filter(is_personal=True)
@@ -23,11 +24,13 @@ def home(request):
     else:
         return render(request, 'home.html')
 
+
+# Return the team page if authorized and team exists
 @login_required
 def team(request, team_name):
     team=request.user.teams.filter(title = team_name)
     if not team.exists():
-        return Http404()
+        return HttpResponseNotFound()
     team = team.first()
     if request.user in team.members.all():
         chats = ChatMessage.objects.filter(team=team).order_by('time')
@@ -35,6 +38,7 @@ def team(request, team_name):
     return HttpResponseForbidden()
 
 
+# Singin using AAD Oauth
 def sign_in(request):
     if request.user.is_authenticated:
         return redirect('/')
@@ -43,11 +47,14 @@ def sign_in(request):
     return HttpResponseRedirect(sign_in_url)
 
 
+# Callback after obtaining auth token from AAD
 def aad_callback(request):
     expected_state = request.session.pop('auth_state', '')
     token = get_token_from_code(request.get_full_path(), expected_state)
     user = get_user(token)
     email = user['mail'] if (user['mail'] != None) else user['userPrincipalName']
+
+    #Create the User and Account entry in database for this user if does not exist.
     if not User.objects.filter(email=email).exists():
         new_user = User()
         tmp = email.split('@')[0:2]
@@ -60,18 +67,22 @@ def aad_callback(request):
         account.email = email
         account.save()
 
+    #Login the user. The user is stored in the session and the session id is stored as cookie in the client.
     login(request, User.objects.get(email=email))
 
     store_token(request, token)
     return redirect('/')
 
 
+# Logout the user
 def sign_out(request):
     remove_user_and_token(request)
     logout(request)
     return redirect('/')
 
 
+# Create an entry for the requested team in the database,
+# creating an unique room name and adding the requesitng user
 def create_team(request):
     if not request.user.is_authenticated:
         return HttpResponse('Unauthorized', status=401)
@@ -89,6 +100,8 @@ def create_team(request):
     return HttpResponse('Bad Request',status=400)
 
 
+# Search for users matching the query with the user's name and username
+# and return the results in the form of a serialized JSON object
 def search_user(request):
     query = request.GET.get('query','').lower()
     res=[]
@@ -100,10 +113,12 @@ def search_user(request):
                 entry={'username':user.username, 'name':user.account.name, 'match':match}
                 res.append(entry)
     print(res)
-    # res.sort(reverse=True, key=lambda x:x.match)
+    res.sort(reverse=True, key=lambda x:x.match)
     return HttpResponse(json.dumps(res), status=200)
 
 
+# Send team invite to a user
+# Add the user in the team's invitation list and send invitation email
 def invite(request):
     if not request.user.is_authenticated:
         return HttpResponse('Unauthorized', status=401)
@@ -132,6 +147,8 @@ def invite(request):
     return HttpResponseBadRequest()
 
 
+# Accept team invitation
+# Add the user in the team's member list and remove from invitation list
 def accept_invite(request):
     if not request.user.is_authenticated:
         return HttpResponse('Unauthorized', status=401)
@@ -151,6 +168,10 @@ def accept_invite(request):
     return HttpResponseBadRequest()
 
 
+# Accept team invitation through email link
+# The link has a token as a parameter, 
+# which is the symmetric encryption of invitee's username and teams room name.
+# The token is decrypted to check if the request is valid, and if so it is processed.
 def accept_email_invite(request,token):
     fernet = Fernet(settings.EMAIL_ENCRYPTION_KEY)
     username, room = fernet.decrypt(token.encode()).decode().split('@')
@@ -175,7 +196,8 @@ def accept_email_invite(request,token):
     return redirect('/signin/')
 
 
-
+# Decline a team invitation.
+# Remove the user from the teams invitation list
 def decline_invite(request):
     if not request.user.is_authenticated:
         return HttpResponse('Unauthorized', status=401)
@@ -192,7 +214,9 @@ def decline_invite(request):
 
     return HttpResponseBadRequest()
 
-        
+
+# Leave the team
+# Remove the user from the teams member list       
 def leave_team(request):
     if not request.user.is_authenticated:
         return HttpResponse('Unauthorized', status=401)
@@ -208,6 +232,8 @@ def leave_team(request):
     return HttpResponseBadRequest()
 
 
+# Unsets the new notification status of the user
+# When a user opens the notifications in the client, this is requested
 def seen_notif(request):
     if not request.user.is_authenticated:
         return HttpResponse('Unauthorized', status=401)
@@ -217,6 +243,11 @@ def seen_notif(request):
         return HttpResponse('success',status=200)
     return HttpResponseBadRequest()
 
+
+# Start a personal one-to-one conversation with a user
+# Create a team (personal) entry if not already there with room name
+# Add both the users in team if not there
+# return the User Chat page
 @login_required
 def user_chat(request, username):
     if username == request.user.username:

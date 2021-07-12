@@ -13,12 +13,15 @@
 <body>
     {% include "lobby.html" %}
     <div id="chat-room" class="flex flex-col h-fullscreen w-screen bg-gray-800 hidden">
+        <!-- FOCUSED VIDEO PANEL for mobile screens -->
         <div id="focused-video" class="flex flex-1 overflow-hidden sm:hidden justify-center items-center">
             <p class="text-white text-center">Tap a video to focus</p>
         </div>
-        <div class="flex h-32 sm:h-auto sm:flex-grow overflow-hidden">
 
+        <div class="flex h-32 sm:h-auto sm:flex-grow overflow-hidden">
+            <!-- VIDEOS WRAPPER -->
             <div id="video-wrapper" class="flex-grow h-full flex sm:grid overflow-x-scroll px-1 py-1">
+                <!-- LOCAL VIDEO -->
                 <div class="ele video-ele overflow-hidden relative bg-gray-900 rounded-lg m-1" id="local-video-wrp">
                     <video id="local-video" class="h-full w-full" autoplay playsinline></video>
                     <div class="video-off border-2 border-solid border-black h-full w-full flex items-center justify-center hidden bg-gray-800 rounded-lg">
@@ -35,12 +38,15 @@
 
             </div>
 
-
+            <!-- MESSAGES PANEL -->
             <div id="chat-panel" class="absolute top-0 right-0 sm:relative h-full w-0 flex flex-col flex-shrink-0 bg-white overflow-hidden z-10">
+                
                 <div class="flex items-center justify-between mx-3 mt-4">
                     <p class="text-gray-900 text-lg">Messages</p>
                     <img src="/static/img/close.svg" class="chat-toggle h-5 w-5 cursor-pointer" alt="">
                 </div>
+
+                <!-- CHAT MESSAGES WRAPPER -->
                 <div id="chat-msg-wrp" class="flex-grow w-full px-3 overflow-y-scroll mx-3">
                     {% for msg in prev_chats %}
                         {% if msg.type == 'T' %}
@@ -51,6 +57,8 @@
                         {% endif %}
                     {% endfor %}
                 </div>
+
+                <!-- CHAT INPUT -->
                 <div class="my-2 bg-gray-200 rounded-full py-2 px-5 mx-3 mb-4">
                     <input type="text" class="bg-transparent w-full" id="chat-input" placeholder="Send message...">
                 </div>
@@ -59,30 +67,35 @@
 
         </div>
 
-
+        <!-- FOOTER -->
         <div class="h-20 w-full flex justify-center items-center bg-gray-700 flex-shrink-0">
 
+            <!-- INVITE BUTTON -->
             <div id="invite-people" class="absolute top-5 left-5 sm:static h-12 w-12 sm:ml-8 p-3.5 flex items-center justify-center cursor-pointer rounded-full bg-gray-900">
                 <img src="/static/img/add-member.svg" title="Invite People">
             </div>
 
             <div class="flex justify-center flex-grow">
+                <!-- MUTE AUDIO BUTTON -->
                 <div data-kind="audio" class="mute-button action-button p-2.5 h-11 w-11 mx-2 flex items-center justify-center cursor-pointer rounded-full bg-gray-900">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512" class="flex-grow" title="Mute Audio">
                         <path d="M633.82 458.1l-157.8-121.96C488.61 312.13 496 285.01 496 256v-48c0-8.84-7.16-16-16-16h-16c-8.84 0-16 7.16-16 16v48c0 17.92-3.96 34.8-10.72 50.2l-26.55-212c3.1-9.4 5.28-19.22 5.28-29.67V96c0-53.02-42.98-96-96-96s-96 42.98-96 96v45.36L45.47 3.37C38.49-2.05 28.43-.8 23.01 6.18L3.37 31.45C-2.05 38.42-.8 48.47 6.18 53.9l588.36 454.73c6.98 5.43 17.03 4.17 22.46-2.81l19.64-25.27c5.41-6.97 4.16-17.02-2.82-22.45zM400 464h-56v-33.77c11.66-1.6 22.85-4.54 33.67-8.31l-50.11-38.73c-6.71.4-13.41.87-20.35.2-55.85-5.45-98.74-48.63-111.18-101.85L144 241.31v6.85c0 89.64 63.97 169.55 152 181.69V464h-56c-8.84 0-16 7.16-16 16v16c0 8.84 7.16 16 16 16h160c8.84 0 16-7.16 16-16v-16c0-8.84-7.16-16-16-16z"></path>
                     </svg>
                 </div>
 
+                <!-- MUTE VIDEO BUTTON -->
                 <div data-kind="video" class="mute-button action-button p-2.5 h-11 w-11 mx-2 flex items-center justify-center cursor-pointer rounded-full bg-gray-900">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512" class="flex-grow" title="Mute Video">
                         <path d="M633.8 458.1l-55-42.5c15.4-1.4 29.2-13.7 29.2-31.1v-257c0-25.5-29.1-40.4-50.4-25.8L448 177.3v137.2l-32-24.7v-178c0-26.4-21.4-47.8-47.8-47.8H123.9L45.5 3.4C38.5-2 28.5-.8 23 6.2L3.4 31.4c-5.4 7-4.2 17 2.8 22.4L42.7 82 416 370.6l178.5 138c7 5.4 17 4.2 22.5-2.8l19.6-25.3c5.5-6.9 4.2-17-2.8-22.4zM32 400.2c0 26.4 21.4 47.8 47.8 47.8h288.4c11.2 0 21.4-4 29.6-11L32 154.7v245.5z"></path>
                     </svg>
                 </div>
 
+                <!-- HANGUP BUTTON -->
                 <div id="hangup-button" class="action-button p-3 h-11 w-11 mx-2 flex items-center justify-center cursor-pointer rounded-full bg-red-500">
                     <img src="/static/img/hang-up.svg" title="Hang Up">
                 </div>
 
+                <!-- SCREEN SHARE BUTTON -->
                 <div id="screen-share" data-state="off" class="action-button h-11 w-11 mx-2 flex items-center justify-center cursor-pointer rounded-full bg-gray-900">
                     <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" xml:space="preserve" height="25px" width="25px" title="Open Chat">
                         <path d="M480,32H32C14.328,32,0,46.326,0,64v288c0,17.673,14.328,32,32,32h176v32h-32c-17.672,0-32,14.326-32,32
@@ -92,6 +105,7 @@
                 </div>
             </div>
 
+            <!-- CHAT BUTTON -->
             <div class="chat-toggle absolute top-20 left-5 sm:relative sm:top-0 sm:left-0 sm: h-12 w-12 sm:mr-8 p-3.5 flex items-center justify-center cursor-pointer rounded-full bg-gray-900">
                 <div id="new-msg-indicator" class="bg-red-400 absolute rounded-full top-3 right-2.5 h-2 w-2 hidden"></div>
                 <img src="/static/img/chat.svg">
@@ -102,12 +116,7 @@
 
     {% include "thankyou.html" %}
     
-    
-    <template id="test-temp">
-        <div class="ele bg-gray-200 border-black border-solid border-2"></div>
-    </template>
-
-
+    <!-- REMOTE VIDEO ELEMENT TEMPLATE -->
     <template id="remote-video-temp">
         <div class="ele video-ele overflow-hidden relative bg-gray-900 rounded-lg m-1">
             <video class="remote-video h-full w-full" autoplay playsinline></video>
@@ -121,7 +130,7 @@
         </div>
     </template>
 
-
+    <!-- CHAT MESSAGE ELEMENT TEMPLATE -->
     <template id="chat-msg-temp">
         <div class="my-4">
             <p class="chat-author font-medium"></p>

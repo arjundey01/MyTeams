@@ -1,6 +1,11 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.fields import CharField
+
+
+#This class represents a table in the database to store additonal information about the user
+#and acts as an extension of the django's inbuilt User model.
+#Instances of this class are used to create entries in the table
 class Account(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
@@ -11,6 +16,8 @@ class Account(models.Model):
         return self.name
 
 
+#This class represents a table in the database to store created teams
+#Instances of this class are used to create entries in the table
 class Team(models.Model):
     title = models.CharField(max_length=50)
     room = CharField(max_length=100)   

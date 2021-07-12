@@ -10,6 +10,7 @@
     <div class="w-full h-fullscreen flex flex-col">
         <!-- HEADER -->
         <div class="flex w-full bg-gray-800 h-16 justify-between items-center px-3 sm:px-6 flex-shrink-0">
+            <!-- USER LOGO AND NAME -->
             <div class="flex items-center ml-3">
                 <img src="/static/img/back.svg" class="back-button h-5 mr-4 cursor-pointer">
                 {% if other.logo_url %}
@@ -21,6 +22,8 @@
                 {% endif %}
                 <p class="text-white text-lg ml-3 hidden sm:block">{{other.account.name}}</p>
             </div>
+
+            <!-- VIDEO CHAT BUTTON -->
             <div class="flex">
                 <a href="/chat/t/{{team.room}}/">
                     <img src="/static/img/video.svg" id="team-video-btn" title="Start/Join Video Call"  
@@ -29,23 +32,27 @@
             </div>
         </div>
 
+
         <div class="flex-grow flex w-full relative overflow-auto">
 
             <div class="main-wrp flex-grow bg-gray-900 h-full flex flex-col items-stretch duration-500">
                 
-                <!-- CHAT MESSAGES -->
+                <!-- CHAT MESSAGES WRAPPER -->
                 <div id="chats-wrapper" class="bg-gray-700 flex flex-col flex-grow px-3 py-4 overflow-y-scroll">
                     {% for msg in chats %}
                         {% if msg.type != 'T' %}
+                        <!-- JOIN LEAVE MESSAGE -->
                         <div class="bg-gray-600 rounded px-3 py-1 text-white self-center mt-4">
-                            <p class="text-center text-light" style="font-size: 10px;">{{ msg.time|date:'d/M/Y, f A'}}: {{msg.text}}</p>
+                            <p class="text-center text-light" style="font-size: 10px;">{{ msg.time|date:'d/m/Y, f A'}}: {{msg.text}}</p>
                         </div>
                         {% elif msg.user == user %}
+                        <!-- SELF MESSAGE -->
                         <div class="bg-gray-500 rounded px-3 pt-2 pb-1 text-white self-end text-sm mt-4" style="max-width: 60%;">
                             <p class="text-sm">{{msg.text}}</p>
-                            <p class="text-gray-200 text-right mt-0.25" style="font-size: 10px;">{{ msg.time|date:'d/M/Y, f A'}}</p>
+                            <p class="text-gray-200 text-right mt-0.25" style="font-size: 10px;">{{ msg.time|date:'d/m/Y, f A'}}</p>
                         </div>
                         {% else %}
+                        <!-- OTHER MESSAGE -->
                         <div class="flex mt-4" style="max-width: 60%;">
                             <div class="rounded-full flex items-center justify-center text-xl h-8 w-8" style="background-color: bisque;">
                                 {{msg.user|user_logo}}
@@ -54,7 +61,7 @@
                                 <p class="text-xs font-medium self-start text-white ml-1">{{msg.user.account.name}}</p>
                                 <div class="bg-gray-800 rounded px-3 pt-2 pb-1 text-white self-start text-sm mt-1">
                                     <p class="text-sm">{{msg.text}}</p>
-                                    <p class="text-gray-300 text-right mt-0.25" style="font-size: 10px;">{{ msg.time|date:'d/M/Y, f A'}}</p>
+                                    <p class="text-gray-300 text-right mt-0.25" style="font-size: 10px;">{{ msg.time|date:'d/m/Y, f A'}}</p>
                                 </div>
                             </div>
                         </div>
@@ -83,7 +90,7 @@
 
     <input type="text" readonly hidden id="room-name" value="{{team.room}}">
 
-    <!-- CHAT MESSAGE TEMPLATES  -->
+    <!-- CHAT MESSAGE ELEMENT TEMPLATES  -->
     <template id="info-msg-tmp">
         <div class="bg-gray-600 rounded px-3 py-1 text-white self-center mt-4">
             <p class="text-center text-light" style="font-size: 10px;">
