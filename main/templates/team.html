@@ -11,6 +11,7 @@
         <!-- HEADER -->
         <div class="flex w-full bg-gray-800 h-16 justify-between items-center px-3 sm:px-6 flex-shrink-0">
             <div class="flex items-center ml-3">
+                <img src="/static/img/back.svg" class="back-button h-5 mr-4 cursor-pointer">
                 {% if team.logo_url %}
                 <img src="{{team.logo.url}}" class="rounded-full h-10 w-10 object-cover">
                 {% else %}
@@ -116,7 +117,7 @@
     
                 <!-- FOOTER  -->
                 <div class="flex w-full bg-gray-800 h-16 items-center justify-center px-5 sm:px-10 flex-shrink-0">
-                    <div class="flex bg-gray-500 rounded-full items-center" style="width: 500px;">
+                    <div class="flex bg-gray-500 rounded-full items-center w-full lg:w-1/2" style="max-width: 500px;">
                         <input type="text" id="chat-input" class="bg-transparent ml-5 my-2 flex-grow min-w-0" placeholder="Write something...">
                         <img id="chat-send-button" src="/static/img/send.svg" class="h-6 w-6 object-contain cursor-pointer mr-4">
                     </div>

@@ -1,10 +1,11 @@
 ;(function(){
+    /*List of the current and invited members*/
     const members = []
-    
     $('.member-name').each((i,ele)=>{
         members.push($(ele).attr('data-username'));
     })
-    
+
+    //Toggle appropriate elements on button clicks
     $('#team-info-btn').on('click', function(e){
         $('.team-info').parent().toggleClass('team-info-active');
     });
@@ -17,6 +18,7 @@
         $('#overlay').addClass('hidden');
     });
 
+    //Search for users to invite
     $('#user-search-input').on('keypress', function(e){
         if(e.keyCode == 13){
             search();
@@ -27,6 +29,10 @@
         search();
     })
 
+    /**Search for users by making an ajax request to the server,
+     * remove the members and the invited members from the results
+     * and update the UI according to the results. 
+     * */
     function search(){
         const query = $('#user-search-input').val();
         $('#search-res-wrp').html("");
@@ -36,7 +42,9 @@
             $('#search-res-msg').text('Please enter atleast 3 characters.');
             return;
         }
+
         $('#search-res-msg').text('Searching...');
+
         $.ajax({
             url: '/search/',
             data: {query: query},
@@ -69,17 +77,25 @@
         });
     }
 
-    function removeMembers(a){
+    /**
+     * Remove the members and the invited members from the list of user objects
+     * @param {Array} users Array of user objects
+     * @returns {Array} Filtered array 
+     */
+    function removeMembers(usernames){
         const presentB = {};
         const res = []
         members.forEach((e)=>{presentB[e]=true});
-        a.forEach((e)=>{
+        usernames.forEach((e)=>{
             if(!presentB[e.username])res.push(e);
         })
         return res;
     }
 
-    //callback of invite button (.res-invite) click event
+    /**
+     * Callback of invite button (.res-invite) click event.
+     * Invite the user by making an ajax request to the invite endpoint
+     */
     function invite(){
         console.log('Inviting',$(this).text());        
         $(this).attr('src','/static/img/loading-ind.gif');
@@ -102,6 +118,8 @@
         })
     }
 
+
+    //Leave the team by making an ajax request to the leave team endpoint
     $('.team-leave-btn').on('click', function(e){
         const conf = confirm('Leave the team? :( ');
         if(!conf)return;

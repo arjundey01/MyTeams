@@ -1,18 +1,28 @@
+/**The HTML element representing the local video*/
 const localVideo = document.getElementById('local-video');
-const callButton = document.getElementById('call-button');
+/**The room name of the chat room*/
 const roomName =  document.getElementById('room-name').textContent;
+
+//The local user's username, name and logged in status
 let selfUsername;
 let selfName;
 let loggedIn = false;
+
+/**The RTCPeerConnection configuration object, containing the list of ICE Servers */
 const RTCPeerConfig = {iceServers:[{urls:"stun:stun.l.google.com:19302"}, {urls:"stun:stun.services.mozilla.com"}]};
 
+/**A dictionary containing username-Peer key-value pairs, of the added peers */
 const peers={};
+
+/**Local media device constraints */
 const deviceConstraints = {video: {height:720, width:1280}, audio: true};
 const muted = {video: false, audio:false};
 
+//MediaStream objects representing the local video-audio input and screen video input respectively
 let localVideoStream;
 let screenStream;
 
+/**The websocket signalling channel used to communicate between the peers before the direct p2p connection is established*/
 const signalingChannel = new WebSocket(
     'wss://'
     + window.location.host.split(":")[0]
@@ -71,6 +81,9 @@ signalingChannel.onerror = (err)=>{
     alert('Could not connect to the chat server. Please reload the page to retry.');
 }
 
+/**
+ * Initialize the local video-audio stream and video elements
+ */
 function init(){
     navigator.mediaDevices
     .getUserMedia(deviceConstraints)
@@ -91,6 +104,12 @@ function init(){
     });
 }
 
+/**Handle the 'login' signal. 
+ * The 'login' signal authorizes the user to join in the video chat room,
+ * after the 'login' request is sent by the peer to the server by pressing the 'Join' button
+ * @param {{success:boolean, username:string, name:string}} description Object representing the success of the login,
+ * and the username and the name of the local user.
+ */
 function handleLogin({success, username, name}){
     console.log(username," logging in...");
     if(success){
@@ -111,9 +130,20 @@ function handleLogin({success, username, name}){
     }
 }
 
+/**
+ * Handle the 'join' signal.
+ * The 'join' signal is sent when a new peer joins the room.
+ * @param {{username:string, name:string}} description Object containing the username and the name of the peer joined 
+ */
 function handleJoin({username, name}){
     console.log(name, 'joined!');
     if(username != selfUsername){
+
+        //If a Peer object already exists correspoding to the peer joined, then re-initialize the peer 
+        //else create a new one.
+        //Then send a request to the new peer to create a Peer object
+        //corresponding to the local peer by sending the 'add-peer' signal (impicit if new Peer is created)
+
         if(peers[username]){
             peers[username].createVideo();
             peers[username].initConn();
@@ -125,9 +155,22 @@ function handleJoin({username, name}){
     }
 }
 
+/**
+ * Handle the 'add-peer' signal.
+ * The 'add-peer' signal is sent in response to the 'join' signal when a new peer joins the room.
+ * This signal instructs the joined peer to create a new Peer object corresponding to remote peer.
+ * @param {{username:string, name:string, muted:{audio:boolean, video:boolean}}} description Object
+ * containing the username, name, and muted status of the remote peer 
+ */
 function handleAddPeer ({username, name, muted}){
     if(!loggedIn)return;
     if(username == selfUsername)return;
+
+    //If a Peer object already exists correspoding to the peer joined, then re-initialize the peer 
+    //else create a new one.
+    //Then send a 'ready' signal to the remote indicating that the local peer is ready to be called
+    //This is impicit if new Peer is created, with was_requested parameter as true
+
     if(peers[username]){
         peers[username].createVideo();
         peers[username].initConn();
@@ -138,18 +181,25 @@ function handleAddPeer ({username, name, muted}){
     peers[username] = peer;
 }
 
+/**Handle recieving a chat message. */
 function handleMessage({username, text, name}){
+
+    //Create new message element and append to the messages panel
     const temp = document.getElementById('chat-msg-temp');
     const p = temp.content.cloneNode(true);
     $('.chat-author',p).text(name);
     $('.chat-text',p).text(text);
     $('#chat-msg-wrp').append(p);
     $('#chat-msg-wrp')[0].scrollTo(0,$('#chat-msg-wrp')[0].scrollHeight);
+
+    //Show the new message indicator, if messages panel is closed 
     if(!$('#chat-panel').hasClass('chat-panel-active')){
         $('#new-msg-indicator').removeClass('hidden');
     };
 }
 
+
+//Login when the join button is clicked or Enter is pressed inside the display name input.
 $('#join-button').on('click', function(e){
     login();
 });
@@ -159,6 +209,7 @@ $('#username-input').on('keypress', function(e){
         login();
 });
 
+/**Send the 'login' signal*/
 function login(){
     selfName = $('#username-input').val();
     if(selfName != ""){
@@ -170,6 +221,7 @@ function login(){
     }
 }
 
+//Send a chat message, if Enter pressed while in chat input 
 $('#chat-input').on('keypress', function(e){
     if(e.keyCode == 13 && $(this).val()!=""){
         signalingChannel.send(JSON.stringify({
@@ -180,6 +232,7 @@ $('#chat-input').on('keypress', function(e){
     }
 });
 
+//Add handler for mute button clicks
 $('.mute-button').on('click', function(e){
     const kind = $(this).attr('data-kind');
 
@@ -187,7 +240,9 @@ $('.mute-button').on('click', function(e){
         return;
 
     muted[kind]=!muted[kind];
+
     if(muted[kind]){
+        //If the track was muted, remove and stop the track from the local video-audio stream
         localVideoStream.getTracks().forEach(track=>{
             if(track.kind == kind){
                 localVideoStream.removeTrack(track);               
@@ -195,28 +250,40 @@ $('.mute-button').on('click', function(e){
             }
         })
     }else{
+        //If the track was unmuted, produce a new stream containing the unmuted track,
+        //and add it to all the peer connections
         const config = {}
         config[kind]=deviceConstraints[kind];
+        
         navigator.mediaDevices.getUserMedia(config).then((stream)=>{
+            
             localVideoStream.addTrack(stream.getTracks()[0]);
+            
             for(const peer in peers ){
                 if(!peers[peer])continue;
                 if(!peers[peer].peerConn)continue;
+
                 const senders = peers[peer].peerConn.getSenders();
-                console.log(senders);
+
                 var sender = senders.find(function(s) {
                     if(!s.track)return false;
                     return s.track.kind == kind;
                 });
+
+                //If a sender with the intended kind exists, replace its track with the new one;
+                //Else add the track creating a new sender, renegotiation is required in this case, so call again
                 if(sender){
                     sender.replaceTrack(stream.getTracks()[0]);
                 }else{
-                    console.log(peers[peer].peerConn.addTrack(stream.getTracks()[0]));
+                    peers[peer].peerConn.addTrack(stream.getTracks()[0]);
                     peers[peer].call();
                 }
+
             };
         });
     }
+
+    //Update the UI
     $(`.mute-button[data-kind="${kind}"]`).toggleClass('mute-button-active');
 
     if(kind=='audio'){
@@ -229,6 +296,7 @@ $('.mute-button').on('click', function(e){
         $('#lobby-video-wrp video').toggleClass('hidden');
     }
 
+    //Send 'mute' signal to the connected peers
     if(loggedIn){
         signalingChannel.send(JSON.stringify({
             type: 'mute',
@@ -238,6 +306,9 @@ $('.mute-button').on('click', function(e){
     }
 });
 
+//Handle hangup, by closing the signalling channel and stopping each track.
+//When the signalling channel is closed, 
+//a 'leave' signal is sent to the other peers by the server
 $('#hangup-button').on('click', function(e){
     signalingChannel.close();
     localVideoStream.getTracks().forEach(track=>{
@@ -247,6 +318,7 @@ $('#hangup-button').on('click', function(e){
     $("#thankyou-screen").removeClass('hidden');
 })
 
+//Toggle screen share
 $('#screen-share').on('click', async function(e){
     const state = $(this).attr('data-state');
     if(state=='off'){
@@ -256,16 +328,24 @@ $('#screen-share').on('click', async function(e){
     }
 })
 
+/**Start screen sharing, muting the camera video. */
 async function onStartScreenShare(){
     try{
+        //Get the display media(screen) input 
         screenStream = await navigator.mediaDevices.getDisplayMedia();
+
+        //Replace the video track of each peer, with the screen track
         for(const peer in peers ){
             var sender = peers[peer].peerConn.getSenders().find(function(s) {
                 return s.track.kind == 'video';
             });
             sender.replaceTrack(screenStream.getTracks()[0]);
         };
+
+        //Handle ending of track by some external agent
         screenStream.getTracks()[0].onended = onStopScreenShare;
+
+        //Update the UI
         if(!muted.video){
             $('#local-video-wrp .video-off').toggleClass('hidden');
             $('#local-video-wrp video').toggleClass('hidden');
@@ -273,8 +353,10 @@ async function onStartScreenShare(){
         $('.mute-button[data-kind="video"]').css('opacity','0.5');
         $('#screen-share').attr('data-state','on');
         $('#screen-share').toggleClass('screen-share-active');
+
     }catch(e){    
         console.log('Error: Could not capture screen.',e.name);
+
         if(e.name=="NotAllowedError")
             alert('Sorry, the application does not have permission to access display media.')
         else
@@ -282,14 +364,21 @@ async function onStartScreenShare(){
     }
 }
 
+/**Stop the screen sharing, and restart camera if initially unmuted */
 function onStopScreenShare(){
+
+    //Replace the screen track of each peer, with the camera video track
     for(const peer in peers ){
         var sender = peers[peer].peerConn.getSenders().find(function(s) {
             return s.track.kind == 'video';
         });
         sender.replaceTrack(localVideoStream.getVideoTracks()[0]);
     };
+
+    //stop the screen track
     screenStream.getTracks()[0].stop();
+
+    //Update the UI
     if(!muted.video){
         $('#local-video-wrp .video-off').toggleClass('hidden');
         $('#local-video-wrp video').toggleClass('hidden');

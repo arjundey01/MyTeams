@@ -1,11 +1,14 @@
 ;(function() {
-
+    /*** The room is the same one as the video chat room.
+     * So it recieve all messages that video chat room participants get*/
     const roomName =  $('#room-name').val();
+
     const selfUsername = $('#username').val();
     const chatsWrapper =   document.getElementById('chats-wrapper');
 
     chatsWrapper.scrollTo(0,chatsWrapper.scrollHeight);
 
+    /**The websocket signalling channel used to send and recieve messages*/
     const signalingChannel = new WebSocket(
         'wss://'
         + window.location.host.split(":")[0]
@@ -52,6 +55,9 @@
             console.log("Unauthorized. You cannot connect to this room.")
     }
 
+    /**Handle incoming message.
+     * Create and append to the message panel, a corresponding HTML element
+     */
     function handleMessage({username, text, name}){
         let temp, p;
         if(selfUsername == username){
@@ -72,6 +78,7 @@
      
     }
 
+    /**Handle a video chat room join message.*/
     function handleJoin({name}){
         const temp = document.getElementById('info-msg-tmp');
         const p = temp.content.cloneNode(true);
@@ -82,6 +89,7 @@
         chatsWrapper.scrollTo(0,chatsWrapper.scrollHeight);
     }
 
+    /**Handle a video chat room leave message */
     function handleLeave({name}){
         const temp = document.getElementById('info-msg-tmp');
         const p = temp.content.cloneNode(true);
@@ -93,6 +101,7 @@
         chatsWrapper.scrollTo(0,chatsWrapper.scrollHeight);
     }
 
+    /**Get formatted time stamp DD/MM/YYYY, HH:MM AM*/
     function getTimestamp(){
         const now = new Date();
         const dateStr = now.toLocaleDateString('en-IN');
@@ -100,17 +109,19 @@
         return `${dateStr}, ${timeStr}`
     }
 
+    //Send a message by pressing enter in the message input
     $('#chat-input').on('keypress', function(e){
         if(e.keyCode == 13){
             sendMessage();
         }
     });
 
+    //Send a message by pressing the send button
     $('#chat-send-button').on('click', function(e){
         sendMessage();
     })
 
-
+    //Send a 'message' message over the signalling channel
     function sendMessage(){
         if($('#chat-input').val()!=""){
             signalingChannel.send(JSON.stringify({
@@ -121,4 +132,8 @@
         }
     }
 
+    //Go back
+    $('.back-button').on('click', function(e){
+        window.history.back();
+    })
 })()

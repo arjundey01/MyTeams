@@ -2,6 +2,7 @@ $('#header-profile').on('click', function(e){
     $('#header-profile-options').toggleClass('hidden');
 });
 
+//Show the notification panel and update the seen status of notifications
 $('#notif-btn').on('click', function(e){
     $('#notifs').toggleClass('hidden');
     $.ajax({
@@ -17,6 +18,7 @@ $('#notif-btn').on('click', function(e){
     })
 });
 
+//Accept a team invitation, by sending an ajax request to the endpoint
 $('.accept-invite').on('click',function(e){
     $(this).attr('src','/static/img/loading-ind.gif');
     $.ajax({
@@ -36,6 +38,7 @@ $('.accept-invite').on('click',function(e){
     })
 });
 
+//Decline a team invitation, by sending an ajax request to the endpoint
 $('.decline-invite').on('click',function(e){
     $(this).parent().css('opacity','0.5');
     $.ajax({
@@ -54,6 +57,7 @@ $('.decline-invite').on('click',function(e){
     })
 });
 
+//Search for users
 $('#user-search-input').on('keypress', function(e){
     if(e.keyCode == 13){
         search();
@@ -64,6 +68,9 @@ $('#user-search-btn').on('click', function(e){
     search();
 })
 
+/**Search for users by making an ajax request to the server,
+ * and update the UI according to the response.
+ */
 function search(){
     const query = $('#user-search-input').val();
     $('.search-res').remove();
@@ -103,6 +110,7 @@ function search(){
     });
 }
 
+//Hide opened popups if clicked outside them
 $(window).on('click', function(e){
     if(!$('#search-res-wrp')[0].contains(e.target)){
         $('#search-res-wrp').addClass('hidden');

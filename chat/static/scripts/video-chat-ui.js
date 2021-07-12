@@ -1,3 +1,4 @@
+//Toggle the message panel
 $('.chat-toggle').on('click', function(e){
     $('#chat-panel').toggleClass('chat-panel-active');
     if($('#chat-panel').hasClass('chat-panel-active')){
@@ -15,14 +16,20 @@ window.addEventListener('resize', () => {
     document.documentElement.style.setProperty('--vh', `${vh}px`);
 });
 
+//Copy the invite link to the clipboard
 $('#invite-people').on('click', function(e){
     navigator.clipboard.writeText(window.location.href)
     .then(()=>{alert('Invite link copied!');})
     .catch(()=>{alert('Could not copy invite link :(')});
 })
 
+//Focus the video, when clicked
 $('.video-ele').on('click', focusVideo);
 
+/**Focus the video. 
+ *Enters full screen in larger screens.
+ *Sets the focused video element in mobile screens
+ */
 function focusVideo(e){
     e.preventDefault();
     if(window.innerWidth > 640){
@@ -36,21 +43,18 @@ function focusVideo(e){
     $('#focused-video')[0].appendChild(this);
 }
 
-$('.back-button').on('click',function(){
-    window.history.back();
-})
-
 $('#focused-video').on('click', function(){
     this.requestFullscreen();
 })
 
+//Go back
+$('.back-button').on('click',function(){
+    window.history.back();
+})
+
 const videosContainer = $('#video-wrapper')[0];
 
-function appendVideoElement(ele){
-    $(videosContainer).append(ele);
-    updateVideoContainerLayout();
-}
-
+/**Update the video container layout according to the number of videos*/
 function updateVideoContainerLayout(){
     let cnt = 0;
     $('.ele',videosContainer).each(function(i,e){
