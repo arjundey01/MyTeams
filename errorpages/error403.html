@@ -1,0 +1,51 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyTeams | 403 Forbidden</title>
+
+    <!-- TAILWIND CSS FRAMEWORK CDN -->
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        :root{
+            --vh:100vh;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-900">
+    <div class="header flex items-center justify-between px-5 py-5 fixed top-0 w-full">
+        <!-- LOGO -->
+        <div class="flex items-center">
+            <img src="img/logo.svg" class="h-10" alt="">
+            <p class="text-3xl text-white font-medium ml-4">MyTeams</p>
+        </div>
+
+        <!-- ENGAGE LOGO -->
+        <a href="https://microsoft.acehacker.com/engage2021/" class="hidden sm:flex text-white text-lg cursor-pointer items-center">
+            <img src="img/microsoft-logo.svg" class="h-8 w-8 mr-3">
+            Engage 2021
+        </a>
+    </div>
+
+    <div class="w-screen flex flex-col items-center justify-center" style="height: var(--vh);">
+        <img src="img/forbidden.svg" style="height: 50vh;">
+        <p class="text-white text-center text-4xl mt-10 mx-3">403 Forbidden</p>
+        <p class="text-white text-center text-lg mt-3 mx-3">Sorry! You are not authorized to access this url :(</p>
+    </div>
+</body>
+
+<script>
+    //For getting coorect viewpoert height in mobile browsers
+    let vh = window.innerHeight;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+
+    window.addEventListener('resize', () => {
+        let vh = window.innerHeight;
+        document.documentElement.style.setProperty('--vh', `${vh}px`);
+    });
+</script>
+
+
+</html>
