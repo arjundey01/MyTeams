@@ -255,7 +255,7 @@ def user_chat(request, username):
     user = get_object_or_404(User, username=username)
     team = None
     for tm in user.teams.all():
-        if tm.member_count == 2 and request.user in tm.members.all():
+        if tm.member_count == 2 and request.user in tm.members.all() and tm.is_personal:
             team = tm
             break
     if not team:
