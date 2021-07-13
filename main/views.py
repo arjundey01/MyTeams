@@ -113,7 +113,7 @@ def search_user(request):
                 entry={'username':user.username, 'name':user.account.name, 'match':match}
                 res.append(entry)
     print(res)
-    res.sort(reverse=True, key=lambda x:x.match)
+    res.sort(reverse=True, key=lambda x:x.get('match',0))
     return HttpResponse(json.dumps(res), status=200)
 
 

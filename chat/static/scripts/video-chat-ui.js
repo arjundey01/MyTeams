@@ -54,6 +54,12 @@ $('.back-button').on('click',function(){
 
 const videosContainer = $('#video-wrapper')[0];
 
+/**Append the video element in the videos wrapper and update the layout */
+function appendVideoElement(ele){
+    $(videosContainer).append(ele);
+    updateVideoContainerLayout();
+}
+
 /**Update the video container layout according to the number of videos*/
 function updateVideoContainerLayout(){
     let cnt = 0;

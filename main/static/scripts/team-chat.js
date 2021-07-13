@@ -45,7 +45,7 @@
 
     signalingChannel.onerror = (err)=>{
         console.log("Signaling Channel Error: ",err);
-        alert('Could not connect to the chat server. Please reload the page to retry.');
+        alert('Could not connect to the chat server. It may be a security issue. Please close and reopen your browser window and then retry.');
     }
 
     function handleLogin({success}){
@@ -123,7 +123,7 @@
 
     //Send a 'message' message over the signalling channel
     function sendMessage(){
-        if($('#chat-input').val()!=""){
+        if($('#chat-input').val().trim()!=""){
             signalingChannel.send(JSON.stringify({
                 type:'message',
                 text:$('#chat-input').val()
@@ -134,6 +134,6 @@
 
     //Go back
     $('.back-button').on('click', function(e){
-        window.history.back();
+        window.location='/';
     })
 })()

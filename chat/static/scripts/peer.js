@@ -150,6 +150,24 @@ Peer.prototype.handleMute = function({kind, muted}){
 }
 
 /**
+ * Handle screen sharing event of the remote peer
+ * @param {{on:boolean}} description Object containing the on status of screen sharing 
+ */
+Peer.prototype.handleScreen = function({on}){
+    if(on){
+        if(this.muted.video){
+            $('.video-off', this.remoteVideo.parentElement).addClass('hidden');
+            $(this.remoteVideo).removeClass('hidden');    
+        }
+    }else{
+        if(this.muted.video){
+            $('.video-off', this.remoteVideo.parentElement).removeClass('hidden');
+            $(this.remoteVideo).addClass('hidden');      
+        }
+    }
+}
+
+/**
  * Call the remote peer by creating and sending an offer, and setting the local SDP description
  */
 Peer.prototype.call = function(){

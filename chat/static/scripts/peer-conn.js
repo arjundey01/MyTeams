@@ -15,7 +15,7 @@ const RTCPeerConfig = {iceServers:[{urls:"stun:stun.l.google.com:19302"}, {urls:
 const peers={};
 
 /**Local media device constraints */
-const deviceConstraints = {video: {height:720, width:1280}, audio: true};
+const deviceConstraints = {video: true, audio: true};
 const muted = {video: false, audio:false};
 
 //MediaStream objects representing the local video-audio input and screen video input respectively
@@ -71,6 +71,9 @@ signalingChannel.onmessage = (msg)=>{
         case 'mute':
             peers[data.payload.username].handleMute(data.payload);
             break;
+        case 'screen':
+            peers[data.payload.username].handleScreen(data.payload);
+            break;
         default:
             console.log("Invalid Message");
     }
@@ -78,7 +81,7 @@ signalingChannel.onmessage = (msg)=>{
 
 signalingChannel.onerror = (err)=>{
     console.log("Signaling Channel Error: ",err);
-    alert('Could not connect to the chat server. Please reload the page to retry.');
+    alert('Could not connect to the chat server. It may be a security issue. Please close and reopen your browser window and then retry.');
 }
 
 /**
@@ -212,7 +215,7 @@ $('#username-input').on('keypress', function(e){
 /**Send the 'login' signal*/
 function login(){
     selfName = $('#username-input').val();
-    if(selfName != ""){
+    if(selfName.trim() != ""){
         signalingChannel.send(JSON.stringify({type:'login', name: selfName, video: true}));
     }
     else{
@@ -223,7 +226,7 @@ function login(){
 
 //Send a chat message, if Enter pressed while in chat input 
 $('#chat-input').on('keypress', function(e){
-    if(e.keyCode == 13 && $(this).val()!=""){
+    if(e.keyCode == 13 && $(this).val().trim()!=""){
         signalingChannel.send(JSON.stringify({
             type:'message',
             text:$(this).val()
@@ -336,10 +339,22 @@ async function onStartScreenShare(){
 
         //Replace the video track of each peer, with the screen track
         for(const peer in peers ){
+            if(!peers[peer])continue;
+            if(!peers[peer].peerConn)continue;
+
             var sender = peers[peer].peerConn.getSenders().find(function(s) {
+                if(!s.track)return false;
                 return s.track.kind == 'video';
             });
-            sender.replaceTrack(screenStream.getTracks()[0]);
+
+            //If a sender with the kind video exists, replace its track with the screen one;
+            //Else add the track creating a new sender, renegotiation is required in this case, so call again
+            if(sender){
+                sender.replaceTrack(screenStream.getTracks()[0]);
+            }else{
+                peers[peer].peerConn.addTrack(screenStream.getTracks()[0]);
+                peers[peer].call();
+            }
         };
 
         //Handle ending of track by some external agent
@@ -347,12 +362,18 @@ async function onStartScreenShare(){
 
         //Update the UI
         if(!muted.video){
-            $('#local-video-wrp .video-off').toggleClass('hidden');
-            $('#local-video-wrp video').toggleClass('hidden');
+            $('#local-video-wrp .video-off').removeClass('hidden');
+            $('#local-video-wrp video').addClass('hidden');
         }
         $('.mute-button[data-kind="video"]').css('opacity','0.5');
         $('#screen-share').attr('data-state','on');
         $('#screen-share').toggleClass('screen-share-active');
+
+        //Send screen share signal
+        signalingChannel.send(JSON.stringify({
+            type: 'screen',
+            on: true 
+        }));
 
     }catch(e){    
         console.log('Error: Could not capture screen.',e.name);
@@ -365,14 +386,32 @@ async function onStartScreenShare(){
 }
 
 /**Stop the screen sharing, and restart camera if initially unmuted */
-function onStopScreenShare(){
+async function onStopScreenShare(){
+
+    //If local video track does not exist, create one
+    if(localVideoStream.getVideoTracks().length==0){
+        const stream = await navigator.mediaDevices.getUserMedia({'video': deviceConstraints.video});
+        localVideoStream.addTrack(stream.getVideoTracks()[0]); 
+    }
 
     //Replace the screen track of each peer, with the camera video track
     for(const peer in peers ){
-        var sender = peers[peer].peerConn.getSenders().find(function(s) {
-            return s.track.kind == 'video';
-        });
-        sender.replaceTrack(localVideoStream.getVideoTracks()[0]);
+        if(!peers[peer])continue;
+            if(!peers[peer].peerConn)continue;
+
+            var sender = peers[peer].peerConn.getSenders().find(function(s) {
+                if(!s.track)return false;
+                return s.track.kind == 'video';
+            });
+
+            //If a sender with the kind video exists, replace its track with the camera video;
+            //Else add the track creating a new sender, renegotiation is required in this case, so call again
+            if(sender){
+                sender.replaceTrack(localVideoStream.getVideoTracks()[0]);
+            }else{
+                peers[peer].peerConn.addTrack(localVideoStream.getVideoTracks()[0]);
+                peers[peer].call();
+            }
     };
 
     //stop the screen track
@@ -380,10 +419,16 @@ function onStopScreenShare(){
 
     //Update the UI
     if(!muted.video){
-        $('#local-video-wrp .video-off').toggleClass('hidden');
-        $('#local-video-wrp video').toggleClass('hidden');
+        $('#local-video-wrp .video-off').addClass('hidden');
+        $('#local-video-wrp video').removeClass('hidden');
     }
     $('.mute-button[data-kind="video"]').css('opacity','1');
     $('#screen-share').attr('data-state','off');
     $('#screen-share').toggleClass('screen-share-active');
+
+    //Send screen share signal
+    signalingChannel.send(JSON.stringify({
+        type: 'screen',
+        on: false 
+    }));
 }

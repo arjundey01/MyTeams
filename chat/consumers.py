@@ -154,6 +154,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     'muted':data['muted']
                 }
             )
+        
+        elif data['type']=="screen":
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'chat_screen',
+                    'username': self.username,
+                    'on': data['on']
+                }
+            )
     
 
     # The below functions (with prefix chat_) are handlers for group broadcasts
@@ -212,6 +222,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 'username':event['username'], 
                 'kind':event['kind'], 
                 'muted':event['muted']}}))
+
+    async def chat_screen(self, event):
+         if event['username']!=self.username and self.username:
+            await self.send(text_data=json.dumps({'type':'screen','payload':{
+                'username':event['username'], 
+                'on':event['on']}}))
 
 
     #Check if the user trying to join is authorized to join the room
